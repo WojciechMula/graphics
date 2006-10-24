@@ -1,11 +1,17 @@
+# Wojciech Mula
 
 def isconvex(poly):
 	"""
-	Checks if 'poly' is convex; polygon is a list of pairs (x,y)
+	Checks if 'poly' is convex; polygon is given
+	as list of pairs (x,y).
 	"""
 	n = len(poly)
+	if n < 3:
+		# not a polygon
+		return False
 	if n == 3:
-		return True	# triangles are convex polygons
+		# triangles are convex polygons
+		return True
 
 	# Algorithm:
 	#   We check all triples of adjecent points. For example if polygon
