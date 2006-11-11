@@ -6,9 +6,21 @@
 # License: BSD
 
 __changelog__ = """
+11.11.2006
+	+ len_sqr
+	+ length (len_sqrt)
+	+ dotprod
+	+ dotprod2
 24.10.2006
-	- lerp1D, lerp, line_equation, intersect, intersect2
+	+ lerp1D
+	+ lerp
+	+ line_equation
+	+ intersect
+	+ intersect2
 """
+
+from math import sqrt
+
 
 def lerp1D(a, b, t):
 	return a + (b-a)*t
@@ -22,7 +34,7 @@ def line_equation((xa, ya), (xb, yb)):
 	"""
 	Function returns coefficients of line
 	equation a*x + b*y + c = 0.  Line 
-	goes over points A and B.
+	goes throught points A and B.
 	"""
 
 	dx = xb-xa
@@ -91,4 +103,34 @@ def intersect2((xa, ya), (xb, yb), (a, b, c)):
 	N = a*xa + b*ya + c
 	return -N/D
 
-# vim: ts=4 sw=4 noexpandtabs nowrap
+
+def len_sqr((xa, ya), (xb, yb)):
+	"""
+	Returns |A-B|^2
+	"""
+	dx = xa - xb
+	dy = ya - yb
+	return dx*dx + dy*dy
+
+
+def length(A, B):
+	"""
+	Returns length of segment: |A-B|
+	"""
+	return sqrt(len_sqr(A, B))
+
+
+def dotprod((xa, ya), (xb, yb)):
+	"""
+	Returns dot product: A.B
+	"""
+	return xa*xb + ya*yb
+
+
+def dotprod2((xa, ya), (xb, yb), (xc, yc)):
+	"""
+	Returns dot product: (B-A).(C-A)
+	"""
+	return (xb-xa)*(xc-xb) + (yb-ya)*(yc-ya)
+
+# vim: ts=4 sw=4 noexpandtab nowrap
