@@ -11,6 +11,12 @@ __changelog__ = """
 	+ length (len_sqrt)
 	+ dotprod
 	+ dotprod2
+	+ neg
+	+ add
+	+ sub
+	+ set_length
+	+ set_length2
+	+ triangle_height
 24.10.2006
 	+ lerp1D
 	+ lerp
@@ -106,7 +112,7 @@ def intersect2((xa, ya), (xb, yb), (a, b, c)):
 
 def len_sqr((xa, ya), (xb, yb)):
 	"""
-	Returns |A-B|^2
+	Returns |AB|^2
 	"""
 	dx = xa - xb
 	dy = ya - yb
@@ -114,10 +120,37 @@ def len_sqr((xa, ya), (xb, yb)):
 
 
 def length(A, B):
-	"""
-	Returns length of segment: |A-B|
-	"""
+	"Returns length of segment: |AB|"
 	return sqrt(len_sqr(A, B))
+
+
+def neg(x, y):
+	"Returns -V"
+	return (-x, -y)
+
+
+def add((xa, ya), (xb, yb)):
+	"Returns B-A"
+	return (xa+xb, ya+yb)
+
+
+def sub((xa, ya), (xb, yb)):
+	"Returns B-A"
+	return (xb-xa, yb-ya)
+
+
+def set_length((xa, ya), length):
+	"Returns vec length*A/|A|"
+	l = sqrt(xa*xa + ya*ya)
+	if zero(l, 1e-10):
+		return (0.0, 0.0)
+	else:
+		return (length*xa/l, length*ya/l)
+
+def set_length2(A, B, length):
+	"Returns vec A + length*(B-A)/|BA|"
+	D = set_length(sub(A, B), length)
+	return add(A, D)
 
 
 def dotprod((xa, ya), (xb, yb)):
@@ -131,6 +164,23 @@ def dotprod2((xa, ya), (xb, yb), (xc, yc)):
 	"""
 	Returns dot product: (B-A).(C-A)
 	"""
-	return (xb-xa)*(xc-xb) + (yb-ya)*(yc-ya)
+	return (xb-xa)*(xc-xa) + (yb-ya)*(yc-ya)
+
+def triangle_height(A, B, C):
+	"Returns height of triangle ABC at point B"
+	
+	l2 = len_sqr(A, B)
+	if zero(l, 1e-10):
+		return 0.0
+	else:
+		l = sqrt(l2)
+		d = dotprod2(A, B, C)/l
+		return sqrt(abs(l2 - d))
+
+def equal(a, b, EPS=1e-10):
+	return abs(a-b) < EPS
+
+def zero(x, EPS=1e-10):
+	return abs(x) < EPS
 
 # vim: ts=4 sw=4 noexpandtab nowrap
