@@ -52,7 +52,7 @@ def add_bbox(BB, ((minx, miny), (maxx, maxy))):
 	return BB
 
 
-def add_points(((minx, miny), (maxx, maxy)), P)
+def add_points(((minx, miny), (maxx, maxy)), P):
 	"""
 	AABB of existing bounding box and
 	set of points (or polygon, polyline, etc.)

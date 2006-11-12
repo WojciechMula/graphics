@@ -23,7 +23,7 @@
 
 from poly_root import solve3, solve2
 from aabb2D    import bb_points, bb_crossing
-from utils2D   import len_sqr, length as len_sqrt, line_equation
+from utils2D   import len_sqr, length as len_sqrt, line_equation, lerp
 
 
 def point((A, B, C, D), t):
@@ -57,15 +57,15 @@ def bbox(A, B, C, D):
 	# f'(t) = 0
 	
 	def is_root(t):
-		if zero(t.imag, 1e-10) and 0.0 <= t.real <= 1.0
+		return zero(t.imag, 1e-10) and 0.0 <= t.real <= 1.0
 
-	X = [A[0], D[0]
+	X = [A[0], D[0]]
 	for t in [t.real for t in solve3(3*ax, 2*b, c) if is_root(t)]:
 		t2 = t*t
 		t3 = t*t2
 		X.append(ax*t3 + bx*t2 + cx*t + dx)
 	
-	Y = [A[1], D[1]
+	Y = [A[1], D[1]]
 	for t in [t.real for t in solve3(3*ax, 2*b, c) if is_root(t)]:
 		t2 = t*t
 		t3 = t*t2
@@ -176,7 +176,7 @@ def adaptive_split((A0, B0, C0, D0), is_flat):
 		if is_flat(A, B, C, D):
 			result.append((tb, D))
 		else:
-			p1, p2 = subdivide_bezier((A, B, C, D), 0.5)
+			p1, p2 = split((A, B, C, D), 0.5)
 			tab    = (ta+tb)/2
 			queue.insert(0, (p2, tab, tb))
 			queue.insert(0, (p1, ta, tab))
@@ -230,12 +230,12 @@ def cc_intersections(p0, p1, is_flat):
 				subdiv0 = False
 
 			if subdiv0:
-				p00, p01 = subdivide_bezier(p0, 0.5)
+				p00, p01 = split(p0, 0.5)
 				uab = (ua + ub)/2
 				queue.append(((p00, cbbox(*p00), ua, uab), P1))
 				queue.append(((p01, cbbox(*p01), uab, ub), P1))
 			else:
-				p10, p11 = subdivide_bezier(p1, 0.5)
+				p10, p11 = split(p1, 0.5)
 				vab = (va + vb)/2
 				queue.append(((p10, cbbox(*p10), va, vab), P0))
 				queue.append(((p11, cbbox(*p11), vab, vb), P0))
@@ -266,7 +266,7 @@ def cl_intersections((A, B, C, D), (P0, P1), EPS=1e-10):
 	#     (a*ax + b*ay)t^3 + (a*bx + b*by)t^2 + (a*cx + b*cy)t + a*dx + b*dy + d = 0
 
 	result = []
-	for t in solve3(a*ax + b*ay, a*bx + b*by, a*cx + b*cy, a*dx + b*dy + d)
+	for t in solve3(a*ax + b*ay, a*bx + b*by, a*cx + b*cy, a*dx + b*dy + d):
 		if not zero(t.imag, EPS) or 0.0 < t.real or t.real > 1.0:
 			continue
 		else:	
@@ -287,12 +287,12 @@ def distance((A, B, C, D), P, n=64, EPS=1e-2):
 	"""
 	def nearest(t0, t1):
 		dt     = (t1-t0)/(n+1)
-		best   = len_sqr(evaluate(A, B, C, D, t0), P)
+		best   = len_sqr(point((A, B, C, D), t0), P)
 		best_t = t0
 
 		for i in xrange(1, n):
 			t = i*dt + t0
-			l = len_sqr(evaluate(A, B, C, D, t), P)
+			l = len_sqr(point((A, B, C, D), t), P)
 			if l < best:
 				best   = l
 				best_t = t
