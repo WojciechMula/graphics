@@ -123,6 +123,7 @@ def length(A, B):
 	"Returns length of segment: |AB|"
 	return sqrt(len_sqr(A, B))
 
+len_sqrt = length # alias
 
 def neg(x, y):
 	"Returns -V"
