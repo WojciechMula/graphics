@@ -60,13 +60,13 @@ def bbox(A, B, C, D):
 		return zero(t.imag, 1e-10) and 0.0 <= t.real <= 1.0
 
 	X = [A[0], D[0]]
-	for t in [t.real for t in solve3(3*ax, 2*b, c) if is_root(t)]:
+	for t in [t.real for t in solve2(3*ax, 2*bx, cx) if is_root(t)]:
 		t2 = t*t
 		t3 = t*t2
 		X.append(ax*t3 + bx*t2 + cx*t + dx)
 	
 	Y = [A[1], D[1]]
-	for t in [t.real for t in solve3(3*ax, 2*b, c) if is_root(t)]:
+	for t in [t.real for t in solve2(3*ay, 2*by, cy) if is_root(t)]:
 		t2 = t*t
 		t3 = t*t2
 		Y.append(ay*t3 + by*t2 + cy*t + dy)
