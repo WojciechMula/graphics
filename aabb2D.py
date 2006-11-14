@@ -25,9 +25,12 @@ def bb_points(P):
 	"""
 	AABB of set of points (or polygon, polyline, etc.)
 	"""
-	X = (x for x, y in p)
-	Y = (y for x, y in p)
-	return (min(X), min(Y)), (max(X), max(Y))
+	minx = min(x for x, y in P)
+	maxx = max(x for x, y in P)
+	miny = min(y for x, y in P)
+	maxy = max(y for x, y in P)
+
+	return ((minx, miny), (maxx, maxy))
 
 
 def add_point(((minx, miny), (maxx, maxy)), (x, y)):
