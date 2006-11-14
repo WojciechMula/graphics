@@ -26,7 +26,7 @@ def solve1(a, b):
 	if zero(a, 1e-6):
 		return ()
 	else:
-		return -b/a
+		return (complex(-b/a),)
 
 def solve2(a, b, c):
 	"""
@@ -35,6 +35,7 @@ def solve2(a, b, c):
 	"""
 
 	if zero(a, 1e-6):
+		print 'here!'
 		return solve1(b, c)
 	else:
 		d  = sqrt(b*b - 4*a*c)
