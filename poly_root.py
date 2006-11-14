@@ -38,8 +38,8 @@ def solve2(a, b, c):
 		return solve1(b, c)
 	else:
 		d  = sqrt(b*b - 4*a*c)
-		x1 = (-b - d)/2*a
-		x2 = (-b + d)/2*a
+		x1 = (-b - d)/(2*a)
+		x2 = (-b + d)/(2*a)
 		return (x1, x2)
 
 def solve3(a, b, c, d):
