@@ -35,7 +35,6 @@ def solve2(a, b, c):
 	"""
 
 	if zero(a, 1e-6):
-		print 'here!'
 		return solve1(b, c)
 	else:
 		d  = sqrt(b*b - 4*a*c)
