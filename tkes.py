@@ -1,17 +1,16 @@
 """
-Tkinter Events Serializer (thread based)
-========================================
+Tkinter Events Serializer
+=========================
 
 author: Wojciech Mula
         wojciech_mula@poczta.onet.pl
 
 license: BSD
 
-$Id: tkes.py,v 1.1 2006-11-28 22:15:06 wojtek Exp $
+$Id: tkes.py,v 1.2 2006-11-30 22:11:09 wojtek Exp $
 """
 
-import Queue
-import thread
+import Tkinter
 
 __all__ = ['FunctionInterrupted', 'EventsSerializer']
 
@@ -19,8 +18,7 @@ class FunctionInterrupted(Exception): pass
 
 class EventsSerializer(object):
 	def __init__(self, abort_event, autobind=None):
-		self.__queue = Queue.Queue()
-		self.__lock  = thread.allocate_lock()
+		self.__queue = []
 		self.__fun   = None
 		self.__args  = None
 		self.__abort = abort_event
@@ -35,75 +33,78 @@ class EventsSerializer(object):
 			for widget, dict in autobind:
 				for name, tkevent in dict:
 					widget.bind(tkevent, create_handler(self, name))
+		
+		self.__root = Tkinter._default_root
+		self.__flag = Tkinter.BooleanVar()
+		self.__root.wait_visibility()
 
-		self.__lock.acquire()
-		thread.start_new_thread(self.__thread, ())
+		# save old WM_DELETE_WINDOW handler, we will call it on exit
+		self.__delete_command = self.__root.protocol('WM_DELETE_WINDOW')
+		self.__root.protocol('WM_DELETE_WINDOW', self.__delete)
+
+	def __delete(self):
+		self.unset_function()
+		self.__root.tk.call(self.__delete_command)
 	
-	def __thread(self):
-		"Worker"
-		while True:
-			# wait for function
-			self.__lock.acquire()	
-			fun  = self.__fun
-			args = self.__args
-			self.__lock.release()
-			if fun:
-				try:
-					# run function
-					fun(*args)
-				except FunctionInterrupted:
-					pass
+	def __worker(self):
+		"Function that run and manage other functions"
+		fun  = self.__fun
+		args = self.__args
+		if fun:
+			try:
+				# run function
+				fun(*args)
+			except FunctionInterrupted:
+				pass
+			self.__root.after_idle(self.__worker)
 	
 	def add_event(self, name, event):
-		"If any function is running insert new event into events queu."
+		"If any function is running insert new event into events queue."
 		if self.__fun is not None:
-			self.__queue.put((name, event))
+			self.__queue.insert(0, (name, event))
+			self.__flag.set(True)
 	
 	def get_event(self):
 		"Get next event from queue. Wait if queue is empty."
-		return self.__queue.get()
+		while not self.__queue:
+			self.__root.wait_variable(self.__flag)
+		
+		return self.__queue.pop()
 
 	def set_function(self, fun=None, args=()):
 		"""
 		Set new function to execute inside thread.
-		Function that is currently run is interrupted.
+		Function that is currently running is interrupted.
 		"""
-
 		if fun is self.__fun:
 			return
 
 		self.interrupt()
 			
 		if fun is None:	# unset function
-			self.__lock.acquire() # halt thread
 			self.__fun  = None
 			self.__args = ()
 		else:
-			if not self.__lock.locked():
-				self.__lock.acquire()
+			if self.__fun is None:
+				self.__fun  = fun
+				self.__args = args
+				self.__root.after_idle(self.__worker)
+			else:
+				self.__fun  = fun
+				self.__args = args
 
-			self.__fun  = fun
-			self.__args = args
-			self.__lock.release()
-	
 	def unset_function(self):
 		"""Interrupt function executed inside thread and
-		wait for new function (set_function)"""
+		wait for new function."""
 		self.interrupt()
 		self.set_function(None)
 	
 	def interrupt(self):
 		"Interrupt function executed inside thread"
 		if self.__fun:
-			# empty queue
-			try:
-				self.__queue.get(False)
-			except Queue.Empty:
-				pass
-
-			# send event
-			self.__queue.put((self.__abort, None))
-
+			# empty queue and send ABORT event
+			self.__queue = [(self.__abort, None)]
+			self.__flag.set(False)
 
 	def wait_events(self, watch, exceptions={}):
 		"""
