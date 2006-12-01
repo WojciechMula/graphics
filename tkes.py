@@ -7,7 +7,7 @@ author: Wojciech Mula
 
 license: BSD
 
-$Id: tkes.py,v 1.4 2006-12-01 16:54:15 wojtek Exp $
+$Id: tkes.py,v 1.5 2006-12-01 23:17:45 wojtek Exp $
 """
 
 import Tkinter
@@ -15,6 +15,7 @@ import Tkinter
 __all__ = ['FunctionInterrupted', 'EventsSerializer']
 
 class FunctionInterrupted(Exception): pass
+class ApplicationDestroyed(Exception): pass
 
 class EventsSerializer(object):
 	def __init__(self, abort_event, autobind=None):
@@ -34,8 +35,12 @@ class EventsSerializer(object):
 				for item in events_list:
 					try:
 						name, tkevent  = item
-					except TypeError:
+					except ValueError:
 						name = tkevent = item
+
+					if name is None:
+						raise ValueError("Event name cannot be None")
+
 					widget.bind(tkevent, create_handler(self, name))
 		
 		self.__root = Tkinter._default_root
@@ -47,7 +52,8 @@ class EventsSerializer(object):
 		self.__root.protocol('WM_DELETE_WINDOW', self.__delete)
 
 	def __delete(self):
-		self.unset_function()
+		self.__queue = [(None, None)]
+		self.__flag.set(False)
 		self.__root.tk.call(self.__delete_command)
 	
 	def __worker(self):
@@ -60,6 +66,8 @@ class EventsSerializer(object):
 				fun(*args)
 			except FunctionInterrupted:
 				pass
+			except ApplicationDestroyed:
+				return
 			self.__root.after_idle(self.__worker)
 	
 	def add_event(self, name, event):
@@ -76,6 +84,8 @@ class EventsSerializer(object):
 		name, event = self.__queue.pop()
 		if name == self.__abort:
 			raise FunctionInterrupted
+		elif name is None:
+			raise ApplicationDestroyed
 		else:
 			return name, event
 
