@@ -7,7 +7,7 @@ author: Wojciech Mula
 
 license: BSD
 
-$Id: tkes.py,v 1.3 2006-12-01 16:50:32 wojtek Exp $
+$Id: tkes.py,v 1.4 2006-12-01 16:54:15 wojtek Exp $
 """
 
 import Tkinter
@@ -72,8 +72,12 @@ class EventsSerializer(object):
 		"Get next event from queue. Wait if queue is empty."
 		while not self.__queue:
 			self.__root.wait_variable(self.__flag)
-		
-		return self.__queue.pop()
+	
+		name, event = self.__queue.pop()
+		if name == self.__abort:
+			raise FunctionInterrupted
+		else:
+			return name, event
 
 	def set_function(self, fun=None, args=()):
 		"""
@@ -135,8 +139,6 @@ class EventsSerializer(object):
 		"""
 		while True:
 			name, data = self.get_event()
-			if name == self.__abort:
-				raise FunctionInterrupted
 			if name in watch:
 				return name, data
 			elif name in exceptions:
@@ -175,9 +177,6 @@ class EventsSerializer(object):
 		while True:
 			name, event = self.get_event()
 			
-			if name == self.__abort:
-				raise FunctionInterrupted
-			
 			if name in watch:
 				yield name, event
 			elif name in exceptions:
@@ -185,6 +184,9 @@ class EventsSerializer(object):
 			elif name in breakon:
 				break
 
+	def report_event(self, event, breakon, exceptions={}):
+		for item in report_events([event], breakon, exceptions):
+			yield item
 
 #######################################################################
 # Example: simple drawing program -- user can draw basic shapes
