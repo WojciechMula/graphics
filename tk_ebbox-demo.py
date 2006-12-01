@@ -1,8 +1,4 @@
-"""
-Simple Demo
-
-wm. 30.11.2006
-"""
+# wm. 30.11.2006
 
 import Tkinter
 
@@ -29,7 +25,7 @@ class DemoApp:
 			(MOTION, '<Motion>'),
 			(ABORT,  '<Escape>'),
 		]
-		self.es = EventsSerializer(ABORT, [(self.canvas, bindings)])
+		self.es = EventsSerializer(ABORT, {self.canvas: bindings})
 		
 		self.closed.set(False)
 		self.show_bbox.set(True)
@@ -57,7 +53,8 @@ class DemoApp:
 			widget = Tkinter.Radiobutton(
 						menu, text=text,
 						value=value, variable=self.function,
-						indicatoron=0, anchor=Tkinter.W)
+						indicatoron=0, anchor=Tkinter.W, selectcolor="lightgray",
+						padx=4, pady=4)
 			widget.pack(fill=Tkinter.X)
 
 		rb('add   point',  'add')
