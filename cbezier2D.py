@@ -136,10 +136,10 @@ def is_flat((A, B, C, D), EPS=1e-6):
 		1. (|A-B| + |B-C| + |C-D|)/|A-B| < EPS
 		2. |A-D|
 	"""
-	lab = length(A, B)
-	lbc = length(B, C)
-	lcd = length(C, D)
-	lad = length(A, D)
+	lab = len_sqrt(A, B)
+	lbc = len_sqrt(B, C)
+	lcd = len_sqrt(C, D)
+	lad = len_sqrt(A, D)
 
 	if zero(lad, EPS):
 		return False, 0.0
