@@ -6,6 +6,8 @@
 # License: BSD
 
 __changelog__ = """
+23.11.2006
+	+ len_manh
 11.11.2006
 	+ len_sqr
 	+ length (len_sqrt)
@@ -108,6 +110,10 @@ def intersect2((xa, ya), (xb, yb), (a, b, c)):
 	
 	N = a*xa + b*ya + c
 	return -N/D
+
+
+def len_manh((xa, ya), (xb, yb)):
+	return abs(xa-xb) + abs(ya-yb)
 
 
 def len_sqr((xa, ya), (xb, yb)):
