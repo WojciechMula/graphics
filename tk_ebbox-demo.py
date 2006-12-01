@@ -6,9 +6,9 @@ wm. 30.11.2006
 
 import Tkinter
 
-from math    import hypot
-from tkes    import *
-from tk_bbox import *
+from math     import hypot
+from tkes     import *
+from tk_ebbox import *
 
 ABORT  = 0
 CLICK  = 1
