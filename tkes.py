@@ -7,7 +7,7 @@ author: Wojciech Mula
 
 license: BSD
 
-$Id: tkes.py,v 1.2 2006-11-30 22:11:09 wojtek Exp $
+$Id: tkes.py,v 1.3 2006-12-01 16:50:32 wojtek Exp $
 """
 
 import Tkinter
@@ -30,8 +30,12 @@ class EventsSerializer(object):
 					self.add_event(name, event)
 				return handler
 
-			for widget, dict in autobind:
-				for name, tkevent in dict:
+			for widget, events_list in autobind.iteritems():
+				for item in events_list:
+					try:
+						name, tkevent  = item
+					except TypeError:
+						name = tkevent = item
 					widget.bind(tkevent, create_handler(self, name))
 		
 		self.__root = Tkinter._default_root
@@ -205,7 +209,7 @@ class Application:
 		)
 
 		self.es   = EventsSerializer('ABORT', 
-			[(self.canvas, autobindevents)]
+			{self.canvas: autobindevents}
 		)
 
 		# trigger action setting function
