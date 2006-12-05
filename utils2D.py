@@ -28,7 +28,7 @@ __changelog__ = """
 """
 
 from math import sqrt
-
+from isconvex import *
 
 def lerp1D(a, b, t):
 	return a + (b-a)*t
