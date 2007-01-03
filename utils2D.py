@@ -27,7 +27,7 @@ __changelog__ = """
 	+ intersect2
 """
 
-from math import sqrt
+from math import sqrt, hypot
 from isconvex import *
 
 def lerp1D(a, b, t):
@@ -125,9 +125,9 @@ def len_sqr((xa, ya), (xb, yb)):
 	return dx*dx + dy*dy
 
 
-def length(A, B):
+def length((xa, ya), (xb, yb)):
 	"Returns length of segment: |AB|"
-	return sqrt(len_sqr(A, B))
+	return hypot(xa-ya, xb-yb)
 
 len_sqrt = length # alias
 
@@ -137,13 +137,13 @@ def neg(x, y):
 
 
 def add((xa, ya), (xb, yb)):
-	"Returns B-A"
+	"Returns A+B"
 	return (xa+xb, ya+yb)
 
 
 def sub((xa, ya), (xb, yb)):
-	"Returns B-A"
-	return (xb-xa, yb-ya)
+	"Returns A-B"
+	return (xa-xb, ya-yb)
 
 
 def set_length((xa, ya), length):
