@@ -7,7 +7,7 @@ author: Wojciech Mula
 
 license: BSD
 
-$Id: tkes.py,v 1.5 2006-12-01 23:17:45 wojtek Exp $
+$Id: tkes.py,v 1.6 2007-01-05 22:23:08 wojtek Exp $
 """
 
 import Tkinter
@@ -194,6 +194,185 @@ class EventsSerializer(object):
 			elif name in breakon:
 				break
 
+	def report_event(self, event, breakon, exceptions={}):
+		for item in report_events([event], breakon, exceptions):
+			yield item
+
+
+class EventsSerializerThreaded(object):
+	def __init__(self, abort_event, autobind=None):
+		self.__queue = Queue.Queue()
+		self.__lock  = thread.allocate_lock()
+		self.__fun   = None
+		self.__args  = None
+		self.__abort = abort_event
+		
+		if autobind is not None:
+
+			def create_handler(self, name):
+				def handler(event):
+					self.add_event(name, event)
+				return handler
+
+			for widget, events_list in autobind.iteritems():
+				for item in events_list:
+					try:
+						name, tkevent  = item
+					except ValueError:
+						name = tkevent = item
+
+					if name is None:
+						raise ValueError("Event name cannot be None")
+
+					widget.bind(tkevent, create_handler(self, name))
+
+		self.__lock.acquire()
+		thread.start_new_thread(self.__thread, ())
+	
+	def __thread(self):
+		"Worker"
+		while True:
+			# wait for function
+			self.__lock.acquire()	
+			fun  = self.__fun
+			args = self.__args
+			self.__lock.release()
+			if fun:
+				try:
+					# run function
+					fun(*args)
+				except FunctionInterrupted:
+					pass
+				except ApplicationDestroyed:
+					return
+	
+	def add_event(self, name, event):
+		"If any function is running insert new event into events queu."
+		if self.__fun is not None:
+			self.__queue.put((name, event))
+	
+	def get_event(self):
+		"Get next event from queue. Wait if queue is empty."
+		name, event = self.__queue.get()
+		if name == self.__abort:
+			raise FunctionInterrupted
+		elif name is None:
+			raise ApplicationDestroyed
+		else:
+			return name, event
+
+	def set_function(self, fun=None, args=()):
+		"""
+		Set new function to execute inside thread.
+		Function that is currently run is interrupted.
+		"""
+
+		if fun is self.__fun:
+			return
+
+		self.interrupt()
+			
+		if fun is None:	# unset function
+			self.__lock.acquire() # halt thread
+			self.__fun  = None
+			self.__args = ()
+		else:
+			if not self.__lock.locked():
+				self.__lock.acquire()
+
+			self.__fun  = fun
+			self.__args = args
+			self.__lock.release()
+	
+	def unset_function(self):
+		"""Interrupt function executed inside thread and
+		wait for new function (set_function)"""
+		self.interrupt()
+		self.set_function(None)
+	
+	def interrupt(self):
+		"Interrupt function executed inside thread"
+		if self.__fun:
+			# empty queue
+			try:
+				self.__queue.get(False)
+			except Queue.Empty:
+				pass
+
+			# send event
+			self.__queue.put((self.__abort, None))
+
+
+	def wait_events(self, watch, exceptions={}):
+		"""
+		Wait for one of events that names are
+		listed in 'watch'.
+
+		If event is listed in 'exception' dictionary
+		then suitable exception is raised.
+
+		If event of name 'abort_event' apper exception
+		FunctionInterrupted is raised.
+
+		All other events are ignored.
+		
+		Example:
+			
+			name, event = wait_events(
+							[CLICK_1, PRESS_ENTER],
+							{CLICK_2: ReenterValue}
+			)
+
+			Function will return if event CLICK_1 or PRESS_ENTER occur.
+			Function will raise exception ReenterValue if CLICK_2 occur.
+		"""
+		while True:
+			name, data = self.get_event()
+			if name in watch:
+				return name, data
+			elif name in exceptions:
+				raise exceptions[name]
+
+
+	def wait_event(self, event, exceptions={}):
+		"Wait for single event. See description of 'wait_events'."
+		name, data = self.wait_events([event], exceptions)
+		return data
+	
+	def report_events(self, watch, breakon, exceptions={}):
+		"""
+		Generator yields all events listed in 'watch' list.
+		Generator returns if any event from 'breakon' list
+		occured.
+
+		If event of name 'abort_event' apper exception
+		FunctionInterrupted is raised.
+
+		If event is listed in 'exception' dictionary
+		then suitable exception is raised.
+
+		If event of name 'abort_event' apper exception
+		FunctionInterrupted is raised.
+
+		All other events are ignored.
+		
+		Example:
+		
+			# print current coordinates of mouse, break
+			# when user press mouse button 1.
+			for name, event in wait_events([MOVED], [CLICK1]):
+				print event.x, event.y
+		"""
+		while True:
+			name, event = self.get_event()
+			
+			if name in watch:
+				yield name, event
+			elif name in exceptions:
+				raise exceptions[name]
+			elif name in breakon:
+				break
+	
 	def report_event(self, event, breakon, exceptions={}):
 		for item in report_events([event], breakon, exceptions):
 			yield item
