@@ -7,17 +7,23 @@ author: Wojciech Mula
 
 license: BSD
 
-$Id: tkes.py,v 1.6 2007-01-05 22:23:08 wojtek Exp $
+$Id: tkes.py,v 1.7 2007-01-05 22:41:14 wojtek Exp $
 """
 
 import Tkinter
 
-__all__ = ['FunctionInterrupted', 'EventsSerializer']
+__all__ = [
+	'FunctionInterrupted',
+	'EventsSerializer',
+	'EventsSerializerTk',
+	'EventsSerializerThreads',
+]
 
 class FunctionInterrupted(Exception): pass
 class ApplicationDestroyed(Exception): pass
 
-class EventsSerializer(object):
+class EventsSerializerTk(object):
+	"Tk-based events serializer"
 	def __init__(self, abort_event, autobind=None):
 		self.__queue = []
 		self.__fun   = None
@@ -154,7 +160,6 @@ class EventsSerializer(object):
 			elif name in exceptions:
 				raise exceptions[name]
 
-
 	def wait_event(self, event, exceptions={}):
 		"Wait for single event. See description of 'wait_events'."
 		name, data = self.wait_events([event], exceptions)
@@ -199,7 +204,9 @@ class EventsSerializer(object):
 			yield item
 
 
-class EventsSerializerThreaded(object):
+
+class EventsSerializerThreads(object):
+	"threads-based events serializer"
 	def __init__(self, abort_event, autobind=None):
 		self.__queue = Queue.Queue()
 		self.__lock  = thread.allocate_lock()
@@ -302,7 +309,6 @@ class EventsSerializerThreaded(object):
 			# send event
 			self.__queue.put((self.__abort, None))
 
-
 	def wait_events(self, watch, exceptions={}):
 		"""
 		Wait for one of events that names are
@@ -332,7 +338,6 @@ class EventsSerializerThreaded(object):
 				return name, data
 			elif name in exceptions:
 				raise exceptions[name]
-
 
 	def wait_event(self, event, exceptions={}):
 		"Wait for single event. See description of 'wait_events'."
@@ -376,6 +381,18 @@ class EventsSerializerThreaded(object):
 	def report_event(self, event, breakon, exceptions={}):
 		for item in report_events([event], breakon, exceptions):
 			yield item
+
+
+try:
+	import Queue
+	import thread
+except ImportError:
+	EventsSerializer = EventsSerializerTk
+else:
+	EventsSerializer = EventsSerializerThreads
+
+
+
 
 #######################################################################
 # Example: simple drawing program -- user can draw basic shapes
