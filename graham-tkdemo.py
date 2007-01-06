@@ -1,7 +1,18 @@
+# -*- coding: iso-8859-2 -*-
+
+# Convex-hull demo
+# ================
+#
+# Wojciech Mu³a
+# wojciech_mula@poczta.onet.pl
+#
+# last update
+# public domain
+
 import Tkinter
 
 from Tkconstants import *
-from tkes   import EventsSerializer, FunctionInterrupted
+from tkes   import EventsSerializerTk as EventsSerializer, FunctionInterrupted
 from graham import convex_hull
 
 ABORT  = "abort"
@@ -30,13 +41,13 @@ class GrahamDemo(object):
 				r    = self.r
 				item = self.canvas.create_oval(x-r, y-r, x+r, y+r, fill='white', activefill='red')
 				self.points[item] = (x, y)
-				self.changed()
+				self.update()
 			else: # RBM
 				try:
 					item = self.canvas.find_withtag(CURRENT)[0]
 					self.canvas.delete(item)
 					self.points.pop(item)
-					self.changed()
+					self.update()
 				except IndexError:
 					pass
 		#end
@@ -45,9 +56,9 @@ class GrahamDemo(object):
 		for item in self.points:
 			self.canvas.delete(item)
 		self.points = {}
-		self.changed()
+		self.update()
 		
-	def demo(self):
+	def update(self):
 		self.canvas.delete('chull')
 		if len(self.points) < 3:
 			return
@@ -57,21 +68,10 @@ class GrahamDemo(object):
 			points.append(x)
 			points.append(y)
 
-		r = self.r*3
-		x = points[0]
-		y = points[1]
-		self.canvas.create_oval(x-r, y-r, x+r, y+r, tags='chull')
-		
-		x = points[-2]
-		y = points[-1]
-		self.canvas.create_oval(x-r, y-r, x+r, y+r, tags='chull', outline='red')
-
 		l = self.canvas.create_polygon(*points)
 		self.canvas.itemconfigure(l, tags='chull', fill='', outline='blue', state='disabled')
 		self.canvas.tag_lower(l, ALL)
 	
-	changed = demo
-
 	def create_ui(self, master):
 		self.canvas = Tkinter.Canvas(master, bg='white')
 		self.canvas.pack(fill=BOTH, expand=1)
@@ -79,6 +79,11 @@ class GrahamDemo(object):
 if __name__ == '__main__':
 	root = Tkinter.Tk()
 	app  = GrahamDemo(root)
+	print """
+	LBM - add point
+	RBM - remove selected point
+	Ctrl-Shift-C - remove all points
+	"""
 	root.mainloop()
 
-# vim ts=4 sw=4
+# vim: ts=4 sw=4
