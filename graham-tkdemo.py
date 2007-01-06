@@ -53,7 +53,7 @@ class GrahamDemo(object):
 			return
 
 		points = []
-		for x, y, index in convex_hull(self.points.values()):
+		for (x, y), index in convex_hull(self.points.values()):
 			points.append(x)
 			points.append(y)
 
