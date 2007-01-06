@@ -1,3 +1,5 @@
+# Calculating convex-hull using Graham algorithm
+
 def convex_hull(points):
 	n = len(points)
 	if n < 3:
@@ -5,7 +7,7 @@ def convex_hull(points):
 	elif n == 3:
 		return [(p, i) for i, p in enumerate(points)]
 
-	# calcuate centroid
+	# 1. calcuate centroid (cx, cy)
 	cx  = sum(x for x,y in points)/float(n)
 	cy  = sum(y for x,y in points)/float(n)
 
@@ -17,14 +19,14 @@ def convex_hull(points):
 		if x <= 0 and y <= 0: return (2.0 + abs(y)/d, r)
 		if x >= 0 and y <= 0: return (4.0 - abs(y)/d, r)
 
-	# move points by vector (-cx,-cy)
+	# 2. move all points by vector (-cx,-cy)
 	tmp = [ (x, y, i, alpha(x-cx, y-cy))
 		for i, (x, y) in enumerate(points)]
 
-	# sort them lexicographically
+	# 3. sort point lexicographically (by angle, then by length)
 	tmp.sort(key=lambda (x, y, i, v): v)
 
-	# get a point on convex hull - point that has min. y and x
+	# 4. get a point on convex hull - point that has min. y and x
 	imin = 0
 	for i, (x, y, _, _) in enumerate(tmp):
 		if y < tmp[imin][1]:
@@ -35,7 +37,7 @@ def convex_hull(points):
 
 	tmp = tmp[imin:] + tmp[:imin]
 
-	# find convex hull
+	# 5. find convex hull
 	ai = 0
 	while ai < n:
 		xa, ya, _, _ = tmp[ai]
