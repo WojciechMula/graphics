@@ -5,7 +5,8 @@
 # Wojciech Mu³a
 # License: BSD
 
-__changelog__ = """
+# changelog
+"""
 23.11.2006
 	+ len_manh
 11.11.2006
@@ -127,7 +128,7 @@ def len_sqr((xa, ya), (xb, yb)):
 
 def length((xa, ya), (xb, yb)):
 	"Returns length of segment: |AB|"
-	return hypot(xa-ya, xb-yb)
+	return hypot(xa-xb, ya-yb)
 
 len_sqrt = length # alias
 
