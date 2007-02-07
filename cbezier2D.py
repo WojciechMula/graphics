@@ -7,6 +7,11 @@
 
 # changelog
 '''
+ 6.02.2007:
+	+ is_flat2
+	+ is_flat3
+	* is_flat -> is_flat1
+
 11.11.2006:
 	+ point
 	+ bbox
@@ -21,9 +26,12 @@
 	+ length
 '''
 
+from math import sqrt
+
 from poly_root import solve3, solve2
 from aabb2D    import bb_points, bb_crossing
-from utils2D   import len_sqr, length as len_sqrt, line_equation, lerp
+from utils2D   import len_sqr, len_sqrt, line_equation, lerp, dotprod2
+
 
 
 def point((A, B, C, D), t):
@@ -123,7 +131,7 @@ def eq_coefs((x0, y0), (x1, y1), (x2, y2), (x3, y3)):
 	return (ax, bx, cx, dx), (ay, by, cy, dy)
 
 
-def is_flat((A, B, C, D), EPS=1e-6):
+def is_flat1((A, B, C, D), EPS=1e-6):
 	"""
 	Checks if Bezier curve is "flat".
 
@@ -147,9 +155,52 @@ def is_flat((A, B, C, D), EPS=1e-6):
 		return (equal((lab + lbc + lcd)/lad, 1.0, EPS), lad)
 
 
+def is_flat2((A, B, C, D), d=1e-3):
+	x_AC, y_AC = lerp(A, C, 0.5)
+	x_BD, y_BD = lerp(B, D, 0.5)
+
+	d1 = abs(x_AC - B[0]) + abs(y_AC - B[1])
+	
+	d2 = abs(x_BD - C[0]) + abs(y_BD - C[1])
+
+	return d1 <= d and d2 <= d
+
+
+def is_flat3((A, B, C, D), d=0.1, p=None):
+	l_AD  = len_sqrt(A, D)
+
+	if zero(l_AD, 1e-10):
+		return (False, 0.0, None, None)
+
+	l_ABp = dotprod2(A, B, D)/l_AD
+	l_ACp = dotprod2(A, C, D)/l_AD
+
+	# if C' lie on segment AD and B' lie on segment AD
+	# and order of points is A, B', C', D
+	if  0.0 < l_ABp < l_ACp < l_AD:
+	   
+		d_B = sqrt(abs(len_sqr(A, B) - l_ABp*l_ABp))
+		d_C = sqrt(abs(len_sqr(A, C) - l_ACp*l_ACp))
+
+		if type(d) is not None:
+			d = float(d)
+			val = d_B <= d and d_C <= d
+		elif type(p) is not None:
+			p = float(p)
+			val = d_B/d <= p and d_C/d <= p
+		else:
+			raise ValueError("Either parameter p or d have to be set.")
+		
+		return (val, l_AD, d_B, d_C)
+		
+	else:
+		return (False, l_AD, None, None)
+
+
+
 def adaptive_split((A0, B0, C0, D0), is_flat):
 	"""
-	Return **sorted** list of pair (parameter, points)
+	Return **sorted** list of pairs (parameter, points)
 	at Bezier curve that are define endpoint of flat
 	segments of curve.  To determine if segment
 	of curve is flat external function is_flat is used.
