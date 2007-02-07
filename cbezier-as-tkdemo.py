@@ -19,6 +19,9 @@ from utils2D import len_sqrt
 
 class Dummy: pass
 def main():
+	state = Dummy()
+	state.point = None	# persistent state
+	
 	# control points
 	default_points = [
 		( 50.0, 100.0),
@@ -26,15 +29,13 @@ def main():
 		(150.0, 50.0),
 		(200.0, 100.0),
 	]
-	points = default_points[:]
+	state.points = default_points[:]
 
 	##########################################################
 	# Setup interface
 	root  = Tk()
 
 	# Variables
-	state = Dummy()
-	state.point = None	# persistent state
 	
 	method = IntVar()	# method (1-3) used to detrmin flatteness of Bcurve
 	
@@ -60,11 +61,13 @@ def main():
 	show_dots = BooleanVar() # show dots
 	show_dots.set(True)
 
+	points_count = StringVar()
+
 	# Widgets
 	canv  = Canvas(root, bg="white")
 	bezier_curve  = canv.create_line(0, 0, 0, 0)
 	canv.itemconfig(bezier_curve, fill="red")
-	control_line  = canv.create_line(points)
+	control_line  = canv.create_line(state.points)
 	
 	frame = Frame(root, padx=3, pady=3) # main frame
 
@@ -88,10 +91,17 @@ def main():
 
 	frame4 = Frame(frame, relief=RIDGE, bd=2, padx=5, pady=5)
 	e4 = Entry(frame4, textvariable=dmin)
-	c1 = Checkbutton(frame4, text="show_dots", variable=show_dots)
+	c1 = Checkbutton(frame4, text="show verts", variable=show_dots)
 	Label(frame4, text="Common").pack(anchor=W)
 	e4.pack()
 	c1.pack(anchor=W)
+	Label(frame4, textvariable=points_count).pack(anchor=W)
+	
+	def reset():
+		state.points = default_points[:]
+		update()
+
+	Button(frame4, text="Reset curve", command=reset).pack()
 
 	# Pack widgets
 
@@ -124,10 +134,10 @@ def main():
 	def update(*args):
 		canv.delete('tmp')
 		canv.coords(control_line,
-			points[0][0], points[0][1],
-			points[1][0], points[1][1],
-			points[2][0], points[2][1],
-			points[3][0], points[3][1]
+			state.points[0][0], state.points[0][1],
+			state.points[1][0], state.points[1][1],
+			state.points[2][0], state.points[2][1],
+			state.points[3][0], state.points[3][1]
 		)
 		p = [bezier_curve]
 		r = 2
@@ -143,21 +153,22 @@ def main():
 			except ValueError:
 				state.d1 = 0.01
 				
-			tmp = adaptive_split(points, method1)
+			tmp = adaptive_split(state.points, method1)
 		elif method.get() == 2:
 			try:
 				state.d2 = abs(float( d2.get() ))
 			except ValueError:
 				state.d2 = 0.1
 
-			tmp = adaptive_split(points, method2)
+			tmp = adaptive_split(state.points, method2)
 		else:
 			try:
 				state.d3 = abs(float( d3.get() ))
 			except ValueError:
 				state.d3 = 0.2
-			tmp = adaptive_split(points, method3)
+			tmp = adaptive_split(state.points, method3)
 
+		points_count.set("%d verts" % len(tmp))
 		sd = show_dots.get()
 		for t, (x, y) in tmp:
 			p.append(x)
@@ -177,7 +188,7 @@ def main():
 	def nearest_point(x, y):
 		nearest_d = 100.0**2
 		nearest_i = None
-		for i, (xi, yi) in enumerate(points):
+		for i, (xi, yi) in enumerate(state.points):
 			dx = xi - x
 			dy = yi - y
 			d  = dx*dx + dy*dy
@@ -196,7 +207,7 @@ def main():
 		
 		canv.delete('cp')
 		if i is not None:
-			x, y = points[i]
+			x, y = state.points[i]
 			r    = 3
 			canv.create_oval(x-r, y-r, x+r, y+r, fill="blue", tags=("tmp", "cp"))
 
@@ -215,7 +226,7 @@ def main():
 		x = canv.canvasx(event.x)
 		y = canv.canvasy(event.y)
 
-		points[state.point] = (x, y)
+		state.points[state.point] = (x, y)
 		update()
 
 
