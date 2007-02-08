@@ -8,9 +8,8 @@
 # changelog
 """
 07.02.2007
-	+ line_inter
 	+ segments_inter
-	+ line_segment_inteline_segment_interr
+	+ line_segment_inter
 23.11.2006
 	+ len_manh
 11.11.2006
@@ -100,6 +99,7 @@ def intersect((xa, ya), (xb, yb), (xc, yc), (xd, yd)):
 
 	return (u, v)
 
+
 def intersect2((xa, ya), (xb, yb), (a, b, c)):
 	"""
 	Function checks if two lines have common points.
@@ -178,6 +178,7 @@ def dotprod2((xa, ya), (xb, yb), (xc, yc)):
 	"""
 	return (xb-xa)*(xc-xa) + (yb-ya)*(yc-ya)
 
+
 def triangle_height(A, B, C):
 	"Returns height of triangle ABC at point B"
 	
@@ -189,43 +190,9 @@ def triangle_height(A, B, C):
 		d = dotprod2(A, B, C)/l
 		return sqrt(abs(l2 - d))
 
-def equal(a, b, EPS=1e-10):
-	return abs(a-b) < EPS
-
-def zero(x, EPS=1e-10):
-	return abs(x) < EPS
-
-
-def line_inter( (x_a,y_a), (x_b,y_b), (x_c,y_c), (x_d,y_d) ):
-	# solves equation
-	# x_a + (x_b - x_a) * u = x_c + (x_d - x_c) * v
-	# y_a + (y_b - y_a) * u = y_c + (y_d - y_c) * v
-
-	b_1 = x_c - x_a
-	b_2 = y_c - y_a
-
-	a_11 =   x_b - x_a
-	a_12 = -(x_d - x_c)
-
-	a_21 =   y_b - y_a
-	a_22 = -(y_d - y_c)
-
-	detA = a_11*a_22 - a_21*a_12
-	
-	if abs(detA) < 1e-7:
-		return None
-	
-	detU = b_1*a_22 - b_2*a_12
-	detV = a_11*b_2 - a_21*b_1
-
-	u = detU/detA
-	v = detV/detA
-
-	return (u,v)
-
 
 def segments_inter(A, B, C, D):
-	res = line_segment(A,B,C,D)
+	res = intersect(A,B,C,D)
 	if res:
 		u,v = res
 		if (1.0 >= v >= 0.0) and (1.0 >= u >= 0.0):
@@ -234,10 +201,18 @@ def segments_inter(A, B, C, D):
 
 
 def line_segment_inter(L1, L2, A, B):
-	res = __segments(L1,L2, A,B)
+	res = intersect(L1,L2, A,B)
 	if res:
 		_, v = res
 		if (1.0 >= v >= 0.0):
 			return lerp(A,B, v)
+
+
+def equal(a, b, EPS=1e-10):
+	return abs(a-b) < EPS
+
+
+def zero(x, EPS=1e-10):
+	return abs(x) < EPS
 
 # vim: ts=4 sw=4 noexpandtab nowrap
