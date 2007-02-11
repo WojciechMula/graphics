@@ -71,6 +71,20 @@ def build_BSP(points):
 	
 	return make_tree(edges)
 
+def BSP_classify_point(root, P):
+	assert root is not None
+
+	node = root
+	while node:
+		if node.side(P) >= 0.0:
+			inside = True
+			node   = node.left
+		else:
+			inside = False
+			node   = node.right
+
+	return inside
+
 
 CLICK1 = '<Button-1>'
 CLICK2 = '<Button-3>'
@@ -176,6 +190,13 @@ class BSP_Demo(object):
 
 	def check_point(self):
 		root = build_BSP(self.points)
+		'''
+		while True:
+			if BSP_classify_point(root, self.click()):
+				self.canv.itemconfig('P', outline="blue")
+			else:
+				self.canv.itemconfig('P', outline="red")
+		'''
 
 		colors = ["red", "green", "blue"]
 		def make_edges(root, i):
