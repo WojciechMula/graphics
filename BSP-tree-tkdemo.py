@@ -1,23 +1,65 @@
+import itertools
+import string
+
 import utils2D
+import aabb2D
+import tree_layout
+
 
 class BSP_node(object):
-	def __init__(self, A, B):
+	def __init__(self, A, B, value, letter):
 		self.eq = utils2D.line_equation(A, B)
 		self.A  = A
 		self.B  = B
 		self.left  = None
 		self.right = None
+		self.value = value
+
+		# tree_layout releated methods/properties
+		self.cx = 0.0
+		self.cy = 0.0
+		self.width  = 20.0
+		self.letter = letter
 
 	def side(self, (x, y)):
 		a, b, c = self.eq
 		return a*x + b*y + c
+	
+	# tree_layout releated methods/properties
+	def __get_childNodes(self):
+		return filter(bool, [self.left, self.right])
+	childNodes = property(__get_childNodes)
+
+	def hasChildNodes(self):
+		return bool(self.left) or bool(self.right)
+
+	def __get_firstChild(self):
+		if self.left:
+			return self.left
+		else:
+			return self.right
+	firstChild = property(__get_firstChild)
+
+	def __get_lastChild(self):
+		if self.right:
+			return self.right
+		else:
+			return self.left
+	lastChild = property(__get_lastChild)
+
+	
+	def setminx(self, x):
+		self.cx = x + self.width/2.0
+	
+	def maxx(self):
+		return self.cx + self.width/2.0
 
 
-def build_BSP(points):
+def build_BSP(points, names):
 	n = len(points)
 	edges = []
 	for i in xrange(n):
-		e = BSP_node(points[i], points[(i + 1) % n])
+		e = BSP_node(points[i], points[(i + 1) % n], None, names.next())
 		edges.append(e)
 
 	def make_tree(edges):
@@ -50,8 +92,8 @@ def build_BSP(points):
 					u = float(utils2D.intersect2(e.A, e.B, root.eq))
 					if 0.0 <= u <= 1.0:
 						C  = utils2D.lerp(e.A, e.B, u)
-						e1 = BSP_node(e.A, C)
-						e2 = BSP_node(C, e.B)
+						e1 = BSP_node(e.A, C, None, names.next())
+						e2 = BSP_node(C, e.B, None, names.next())
 						e1.eq = e2.eq = e.eq
 
 						if s1 >= 0.0:
@@ -66,7 +108,13 @@ def build_BSP(points):
 					raise ValueError("impossible happend - can't find crosspoints!")
 
 		root.left  = make_tree(l1)
+		if root.left is None:
+			root.left = BSP_node((0.0, 0.0), (1.0, 0.0), True, 'in')
+
 		root.right = make_tree(l2)
+		if root.right is None:
+			root.right = BSP_node((0.0, 0.0), (1.0, 0.0), False, 'out')
+
 		return root
 	
 	return make_tree(edges)
@@ -91,12 +139,32 @@ CLICK2 = '<Button-3>'
 MOTION = '<Motion>'
 
 from random import randint
+	
+def see(canvas, (cx, cy)):
+	cx = int(cx)
+	cy = int(cy)
+
+	xo = canvas.canvasx(0)
+	yo = canvas.canvasy(0)
+	w  = canvas.winfo_width()
+	h  = canvas.winfo_height()
+	
+	canvas.scan_mark(int(cx), int(cy))
+	canvas.scan_dragto(int(xo + w/2), int(yo + h/2), 1)
+
+def bintree_walk(root, fun, level=0, param=None):
+	if root is None:
+		return
+
+	bintree_walk(root.left,  fun, level+1, param)
+	bintree_walk(root.right, fun, level+1, param)
+	fun(root, level, param)
 
 class BSP_Demo(object):
 	def __init__(self, root):
 		self.root = root
 		self.canv = Tkinter.Canvas(root, bg="white")
-		self.canv.pack(side=LEFT)
+		self.tree = Tkinter.Canvas(root, bg="#bbb")
 		self.es = EventsSerializer('x', {self.canv: (CLICK1, CLICK2, MOTION)})
 
 		self.random_points()
@@ -118,6 +186,8 @@ class BSP_Demo(object):
 		Tkinter.Button(f, text="Print", command=self.print_points).pack()
 
 		f.pack(side=LEFT)
+		self.canv.pack(side=TOP)
+		self.tree.pack(side=TOP)
 	
 	def print_points(self):
 		for x, y in self.points:
@@ -189,7 +259,8 @@ class BSP_Demo(object):
 	
 
 	def check_point(self):
-		root = build_BSP(self.points)
+		names = itertools.cycle(string.lowercase)
+		root = build_BSP(self.points, names)
 		'''
 		while True:
 			if BSP_classify_point(root, self.click()):
@@ -197,6 +268,23 @@ class BSP_Demo(object):
 			else:
 				self.canv.itemconfig('P', outline="red")
 		'''
+		tree_layout.TreeLayout2(root, 10.0)
+		def make(node, level, extra):
+			node.cy = level*40
+			w = node.width/2
+			i = self.tree.create_rectangle(node.cx - w, node.cy - w, node.cx + w, node.cy + w, fill="white", tags=('letter', node.letter))
+			node.item = i
+			if node.left:
+				i = self.tree.create_line(node.cx, node.cy, node.left.cx, node.left.cy, tags='line')
+			if node.right:
+				i = self.tree.create_line(node.cx, node.cy, node.right.cx, node.right.cy, tags='line')
+			self.tree.create_text(node.cx, node.cy, text=node.letter)
+
+		self.tree.delete('all')
+		bintree_walk(root, make)
+		self.tree.tag_lower('line', 'all')
+		x1,y1, x2,y2 = self.tree.bbox('all')
+		see(self.tree, ((x1+x2)/2, (y1+y2)/2))
 
 		colors = ["red", "green", "blue"]
 		def make_edges(root, i):
@@ -218,14 +306,15 @@ class BSP_Demo(object):
 		while True:
 			P    = self.click()
 			self.canv.delete('edge')
+			self.tree.itemconfig('letter', fill="white")
 			node = root
 			k = 0
 			while node:
 				s = node.side(P)
 				
 				item = make_line(
-					utils2D.lerp(node.A, node.B,  5.0),
-					utils2D.lerp(node.A, node.B, -5.0),
+					utils2D.lerp(node.A, node.B,  10.0),
+					utils2D.lerp(node.A, node.B, -10.0),
 				)
 				self.canv.itemconfig(item, tags=('edge', 'tmp'), dash=5)
 				
@@ -233,23 +322,37 @@ class BSP_Demo(object):
 
 				if s >= 0.0:
 					self.canv.itemconfig(item, fill="blue", tags=('edge', 'tmp'))
+					self.tree.itemconfig(node.letter, fill="blue")
 				else:
 					self.canv.itemconfig(item, fill="red", tags=('edge', 'tmp'))
+					self.tree.itemconfig(node.letter, fill="red")
 				
 				D = utils2D.lerp(node.A, node.B, 0.5)
-				C = utils2D.set_length((node.eq[0], node.eq[1]), 20)
-				item = make_line(D, utils2D.add(D, C))
-				self.canv.itemconfig(item, tags=('edge', 'tmp'))
+				#C = utils2D.set_length((node.eq[0], node.eq[1]), 20)
+				C = utils2D.set_length((node.eq[0], node.eq[1]), 10)
+				E = utils2D.add(D, C)
+				#item = make_line(D, utils2D.add(D, C))
+				#self.canv.itemconfig(item, tags=('edge', 'tmp'))
+				item = self.canv.create_text(E[0], E[1], text=node.letter, tags=('edge', 'tmp'))
 				
 				
 				prev = node
 				if s >= 0.0:
 					inside = True
 					node = node.left
+					if node.value is not None:
+						inside = node.value
+						self.tree.itemconfig(node.item, fill="blue")
+						node = None
 				else:
 					inside = False
 					node = node.right
-				print " "*k, inside, node
+					if node.value is not None:
+						inside = node.value
+						self.tree.itemconfig(node.item, fill="red")
+						node = None
+
+#				print " "*k, inside, node
 
 				if not node:
 					x1, y1 = utils2D.lerp(prev.A, prev.B, 0.5)
@@ -257,7 +360,7 @@ class BSP_Demo(object):
 					self.canv.create_line(x1, y1, x2, y2, tags=('edge', 'tmp'))
 				k += 1
 
-			print "Inside: %s" % inside
+#			print "Inside: %s" % inside
 			if inside:
 				self.canv.itemconfig('P', outline="blue")
 			else:
