@@ -32,7 +32,12 @@
 """
 
 from math import sqrt, hypot
-from isconvex import *
+
+try:
+	from isconvex import *
+except ImportError:
+	pass
+
 
 def lerp1D(a, b, t):
 	return a + (b-a)*t
