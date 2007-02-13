@@ -3,63 +3,27 @@ import string
 
 import utils2D
 import aabb2D
-import tree_layout
 
 
 class BSP_node(object):
-	def __init__(self, A, B, value, letter):
+	def __init__(self, A, B, leaf):
 		self.eq = utils2D.line_equation(A, B)
 		self.A  = A
 		self.B  = B
 		self.left  = None
 		self.right = None
-		self.value = value
-
-		# tree_layout releated methods/properties
-		self.cx = 0.0
-		self.cy = 0.0
-		self.width  = 20.0
-		self.letter = letter
+		self.leaf  = leaf
 
 	def side(self, (x, y)):
 		a, b, c = self.eq
 		return a*x + b*y + c
-	
-	# tree_layout releated methods/properties
-	def __get_childNodes(self):
-		return filter(bool, [self.left, self.right])
-	childNodes = property(__get_childNodes)
-
-	def hasChildNodes(self):
-		return bool(self.left) or bool(self.right)
-
-	def __get_firstChild(self):
-		if self.left:
-			return self.left
-		else:
-			return self.right
-	firstChild = property(__get_firstChild)
-
-	def __get_lastChild(self):
-		if self.right:
-			return self.right
-		else:
-			return self.left
-	lastChild = property(__get_lastChild)
-
-	
-	def setminx(self, x):
-		self.cx = x + self.width/2.0
-	
-	def maxx(self):
-		return self.cx + self.width/2.0
 
 
-def build_BSP(points, names):
+def build_BSP(points):
 	n = len(points)
 	edges = []
 	for i in xrange(n):
-		e = BSP_node(points[i], points[(i + 1) % n], None, names.next())
+		e = BSP_node(points[i], points[(i + 1) % n], None)
 		edges.append(e)
 
 	def make_tree(edges):
@@ -92,8 +56,8 @@ def build_BSP(points, names):
 					u = float(utils2D.intersect2(e.A, e.B, root.eq))
 					if 0.0 <= u <= 1.0:
 						C  = utils2D.lerp(e.A, e.B, u)
-						e1 = BSP_node(e.A, C, None, names.next())
-						e2 = BSP_node(C, e.B, None, names.next())
+						e1 = BSP_node(e.A, C, None)
+						e2 = BSP_node(C, e.B, None)
 						e1.eq = e2.eq = e.eq
 
 						if s1 >= 0.0:
@@ -109,11 +73,11 @@ def build_BSP(points, names):
 
 		root.left  = make_tree(l1)
 		if root.left is None:
-			root.left = BSP_node((0.0, 0.0), (1.0, 0.0), True, 'in')
+			root.left = BSP_node((0.0, 0.0), (1.0, 0.0), True)
 
 		root.right = make_tree(l2)
 		if root.right is None:
-			root.right = BSP_node((0.0, 0.0), (1.0, 0.0), False, 'out')
+			root.right = BSP_node((0.0, 0.0), (1.0, 0.0), False)
 
 		return root
 	
@@ -124,15 +88,40 @@ def BSP_classify_point(root, P):
 
 	node = root
 	while node:
+		inside = node.leaf
+
 		if node.side(P) >= 0.0:
-			inside = True
 			node   = node.left
 		else:
-			inside = False
 			node   = node.right
 
 	return inside
 
+######################################################################
+
+def BinaryTreeLayout(root, space, x=0.0):
+	if root is None:
+		return x
+	
+	root.width = 20
+	
+	x = BinaryTreeLayout(root.left,  space, x)
+	x = BinaryTreeLayout(root.right, space, x+space)
+
+	if root.left and root.right:
+		root.cx = (root.left.cx + root.right.cx)/2
+	elif root.left:
+		root.cx = roo.left.cx
+	elif root.right:
+		root.cx = roo.right.cx
+	else:
+		root.cx    = x
+		return root.cx + root.width/2
+
+	return x
+	
+
+######################################################################
 
 CLICK1 = '<Button-1>'
 CLICK2 = '<Button-3>'
@@ -152,20 +141,24 @@ def see(canvas, (cx, cy)):
 	canvas.scan_mark(int(cx), int(cy))
 	canvas.scan_dragto(int(xo + w/2), int(yo + h/2), 1)
 
-def bintree_walk(root, fun, level=0, param=None):
-	if root is None:
-		return
 
-	bintree_walk(root.left,  fun, level+1, param)
-	bintree_walk(root.right, fun, level+1, param)
-	fun(root, level, param)
 
 class BSP_Demo(object):
 	def __init__(self, root):
 		self.root = root
-		self.canv = Tkinter.Canvas(root, bg="white")
-		self.tree = Tkinter.Canvas(root, bg="#bbb")
-		self.es = EventsSerializer('x', {self.canv: (CLICK1, CLICK2, MOTION)})
+		
+		f1 = Tkinter.Frame(root)
+		self.canv = Tkinter.Canvas(f1, bg="white")
+		self.tree = Tkinter.Canvas(f1, bg="#bbb")
+		self.es = EventsSerializer('ABORT', {self.canv: (CLICK1, CLICK2, MOTION)})
+
+		self.show_labels = Tkinter.BooleanVar()
+		self.mark_edges  = Tkinter.BooleanVar()
+		self.show_lines  = Tkinter.BooleanVar()
+
+		self.show_labels.set(True)
+		self.mark_edges. set(True)
+		self.show_lines. set(True)
 
 		self.random_points()
 
@@ -176,29 +169,31 @@ class BSP_Demo(object):
 		f = Tkinter.Frame(root)
 		i = Tkinter.IntVar(root)
 		i.set(0)
-		Tkinter.Radiobutton(f, text="Split edge",   variable=i, value=1, command=set_function(self.split_edge)).pack()
-		Tkinter.Radiobutton(f, text="Delete point", variable=i, value=2, command=set_function(self.delete_point)).pack()
-		Tkinter.Radiobutton(f, text="Move point",   variable=i, value=3, command=set_function(self.move_point)).pack()
-		Tkinter.Radiobutton(f, text="Chec point",   variable=i, value=4, command=set_function(self.check_point)).pack()
-		Tkinter.Button(f, text="Random", command=self.random_points).pack()
-		Tkinter.Button(f, text="Reverse", command=self.reverse_points).pack()
-		Tkinter.Button(f, text="Rotate", command=self.rotate_points).pack()
-		Tkinter.Button(f, text="Print", command=self.print_points).pack()
+		Tkinter.Radiobutton(f, text="Split edge",   variable=i, value=1, command=set_function(self.split_edge)).pack(anchor='w')
+		Tkinter.Radiobutton(f, text="Delete point", variable=i, value=2, command=set_function(self.delete_point)).pack(anchor='w')
+		Tkinter.Radiobutton(f, text="Move point",   variable=i, value=3, command=set_function(self.move_point)).pack(anchor='w')
+		Tkinter.Radiobutton(f, text="Chec point",   variable=i, value=4, command=set_function(self.check_point)).pack(anchor='w')
+		Tkinter.Button(f, text="Flip normals",  command=self.flip_normals).pack(fill='x')
+		Tkinter.Button(f, text="Random points", command=self.random_points).pack(fill='x')
+		Tkinter.Button(f, text="Print", command=self.print_points).pack(fill='x')
 
-		f.pack(side=LEFT)
-		self.canv.pack(side=TOP)
-		self.tree.pack(side=TOP)
-	
+		Tkinter.Checkbutton(f, text="Highl. edges", variable=self.mark_edges).pack(anchor='w')
+		Tkinter.Checkbutton(f, text="Show labels",  variable=self.show_labels).pack(anchor='w')
+		Tkinter.Checkbutton(f, text="Show lines",   variable=self.show_lines).pack(anchor='w')
+
+		f.pack(side=LEFT, anchor='n')
+		f1.pack(side=LEFT)
+		self.canv.pack(side=TOP, fill='x', expand=1)
+		self.tree.pack(side=TOP, fill='x', expand=1)
+
+
 	def print_points(self):
+		"prints on stdout polygon's vertices"
 		for x, y in self.points:
 			print x, y,
 		print
 	
-	def rotate_points(self):
-		self.points = self.points[1:] + [self.points[0]]
-		self.update()
-	
-	def reverse_points(self):
+	def flip_normals(self):
 		self.points.reverse()
 		self.update()
 	
@@ -234,7 +229,7 @@ class BSP_Demo(object):
 				d  = dx*dx + dy*dy
 				if d < r:
 					return i
-		#elihw
+		#while
 
 
 	def split_edge(self):
@@ -260,127 +255,114 @@ class BSP_Demo(object):
 
 	def check_point(self):
 		names = itertools.cycle(string.lowercase)
-		root = build_BSP(self.points, names)
-		'''
-		while True:
-			if BSP_classify_point(root, self.click()):
-				self.canv.itemconfig('P', outline="blue")
+		root = build_BSP(self.points)
+		
+		BinaryTreeLayout(root, 10.0)
+		def prepare(node, level, names):
+			if node is None:
+				return
+
+			if node.leaf is True:
+				node.name = 'in'
+			elif node.leaf is False:
+				node.name = 'out'
 			else:
-				self.canv.itemconfig('P', outline="red")
-		'''
-		tree_layout.TreeLayout2(root, 10.0)
-		def make(node, level, extra):
+				node.name = names.next()
+
 			node.cy = level*40
-			w = node.width/2
-			i = self.tree.create_rectangle(node.cx - w, node.cy - w, node.cx + w, node.cy + w, fill="white", tags=('letter', node.letter))
-			node.item = i
+			w       = node.width/2
+
+			node.item = self.tree.create_rectangle(node.cx - w, node.cy - w, node.cx + w, node.cy + w, fill="white", tags=('name', node.name))
+			self.tree.create_text(node.cx, node.cy, text=node.name)
+
+			node.edge = self.canv.create_line(node.A[0], node.A[1], node.B[0], node.B[1], state="hidden", tags=("tmp", "edge"), width=2)
+			a, b, c = node.eq
+			x, y = utils2D.add(
+					utils2D.lerp(node.A, node.B, 0.5),	# edge center
+					utils2D.set_length((a, b), 10.0)	# normal
+			)
+			node.label = self.canv.create_text(x, y, text=node.name, state="hidden", tags=("tmp"))
+			
+			prepare(node.left, level+1, names)
+			prepare(node.right, level+1, names)
+			
 			if node.left:
-				i = self.tree.create_line(node.cx, node.cy, node.left.cx, node.left.cy, tags='line')
+				self.tree.create_line(node.cx, node.cy, node.left.cx, node.left.cy, tags='line')
 			if node.right:
-				i = self.tree.create_line(node.cx, node.cy, node.right.cx, node.right.cy, tags='line')
-			self.tree.create_text(node.cx, node.cy, text=node.letter)
+				self.tree.create_line(node.cx, node.cy, node.right.cx, node.right.cy, tags='line')
+		#def
+
 
 		self.tree.delete('all')
-		bintree_walk(root, make)
+		self.canv.delete('tmp')
+		prepare(root, 0, names)
 		self.tree.tag_lower('line', 'all')
 		x1,y1, x2,y2 = self.tree.bbox('all')
 		see(self.tree, ((x1+x2)/2, (y1+y2)/2))
 
-		colors = ["red", "green", "blue"]
-		def make_edges(root, i):
-			if root is None:
-				return i+1
-
-			item = self.canv.create_line(root.A[0], root.A[1], root.B[0], root.B[1])
-			self.canv.itemconfig(item, fill=colors[i % 3], tags=('edge', 'tmp'))
-
-			i = make_edges(root.left, i+1)
-			i = make_edges(root.right, i)
-			return i+1
-
-		make_edges(root, 0)
-
-		def make_line((xa, ya), (xb, yb)):
-			return self.canv.create_line(xa, ya, xb, yb)
 
 		while True:
-			P    = self.click()
-			self.canv.delete('edge')
-			self.tree.itemconfig('letter', fill="white")
-			node = root
-			k = 0
-			while node:
+			P = self.click()
+
+			# remove all temporary objects
+			self.canv.delete('del')
+			self.canv.itemconfig('tmp', state="hidden")
+		
+			# unmark tree view
+			self.tree.itemconfig('name', fill="white")
+			
+			node   = root
+			inside = None
+			while True:
 				s = node.side(P)
-				
-				item = make_line(
-					utils2D.lerp(node.A, node.B,  10.0),
-					utils2D.lerp(node.A, node.B, -10.0),
-				)
-				self.canv.itemconfig(item, tags=('edge', 'tmp'), dash=5)
-				
-				item = make_line(node.A, node.B)
+
+				if self.show_lines.get():
+					A1 = utils2D.lerp(node.A, node.B, 20.0)
+					B1 = utils2D.lerp(node.B, node.A, 20.0)
+					self.canv.create_line(A1[0], A1[1], B1[0], B1[1], tags='del', dash=5)
+					
+				if self.show_labels.get():
+					self.canv.itemconfig(node.label, state="")
+
+				inside = node.leaf
+				if inside is not None:
+					break
 
 				if s >= 0.0:
-					self.canv.itemconfig(item, fill="blue", tags=('edge', 'tmp'))
-					self.tree.itemconfig(node.letter, fill="blue")
-				else:
-					self.canv.itemconfig(item, fill="red", tags=('edge', 'tmp'))
-					self.tree.itemconfig(node.letter, fill="red")
-				
-				D = utils2D.lerp(node.A, node.B, 0.5)
-				#C = utils2D.set_length((node.eq[0], node.eq[1]), 20)
-				C = utils2D.set_length((node.eq[0], node.eq[1]), 10)
-				E = utils2D.add(D, C)
-				#item = make_line(D, utils2D.add(D, C))
-				#self.canv.itemconfig(item, tags=('edge', 'tmp'))
-				item = self.canv.create_text(E[0], E[1], text=node.letter, tags=('edge', 'tmp'))
-				
-				
-				prev = node
-				if s >= 0.0:
-					inside = True
+					self.tree.itemconfig(node.item, fill="blue")
+					if self.mark_edges.get():
+						self.canv.itemconfig(node.edge, fill="blue", state="")
+
 					node = node.left
-					if node.value is not None:
-						inside = node.value
-						self.tree.itemconfig(node.item, fill="blue")
-						node = None
 				else:
-					inside = False
+					self.tree.itemconfig(node.item, fill="red")
+					if self.mark_edges.get():
+						self.canv.itemconfig(node.edge, fill="red", state="")
+
 					node = node.right
-					if node.value is not None:
-						inside = node.value
-						self.tree.itemconfig(node.item, fill="red")
-						node = None
 
-#				print " "*k, inside, node
-
-				if not node:
-					x1, y1 = utils2D.lerp(prev.A, prev.B, 0.5)
-					x2, y2 = P
-					self.canv.create_line(x1, y1, x2, y2, tags=('edge', 'tmp'))
-				k += 1
-
-#			print "Inside: %s" % inside
 			if inside:
+				self.tree.itemconfig(node.item, fill="blue")
 				self.canv.itemconfig('P', outline="blue")
 			else:
+				self.tree.itemconfig(node.item, fill="red")
 				self.canv.itemconfig('P', outline="red")
-		#elihw
+		#while
 
 
 	def update(self):
 		p = []
-		self.canv.delete('tmp')
+		self.canv.delete('all')
 		r = 4
 		for x, y in self.points:
 			p.append(x)
 			p.append(y)
 			o = self.canv.create_oval(x-r, y-r, x+r, y+r)
-			self.canv.itemconfig(o, fill="#ccc", tags=('tmp', 'P'))
+			self.canv.itemconfig(o, fill="#ccc", tags='P')
 
 		
 		l = self.canv.create_polygon(*p)
-		self.canv.itemconfig(l, tags=("tmp", "L"), fill="", outline="black")
+		self.canv.itemconfig(l, tags="L", fill="", outline="black")
 		self.canv.tag_lower(l, ALL)
 		
 
