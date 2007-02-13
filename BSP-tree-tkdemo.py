@@ -1,3 +1,13 @@
+# -*- coding: iso-8859-2 -*-
+# BSP trees demo -- point classification
+#
+# Author: Wojciech Mu³a, wojciech_mula@poczta.onet.pl
+# 
+# 9-13.02.2007
+#
+# $Date: 2007-02-13 20:08:37 $ $Revision: 1.6 $
+# Public domain
+
 import itertools
 import string
 
@@ -35,12 +45,13 @@ def build_BSP(points):
 		for e in edges:
 			s1 = root.side(e.A)
 			s2 = root.side(e.B)
-			if s1 * s2 > 0.0:
+
+			if s1 * s2 > 0.0: # both verices on one side
 				if s1 > 0.0:
 					l1.append(e)
 				else:
 					l2.append(e)
-			elif s1 * s2 == 0.0:
+			elif s1 * s2 == 0.0: # at least on vertice on edge
 				if s1 == 0.0:
 					if s2 > 0.0:
 						l1.append(e)
@@ -51,7 +62,7 @@ def build_BSP(points):
 						l1.append(e)
 					else:
 						l2.append(e)
-			else:
+			else: # vertices on opposites sides: split is needed
 				try:
 					u = float(utils2D.intersect2(e.A, e.B, root.eq))
 					if 0.0 <= u <= 1.0:
@@ -67,11 +78,15 @@ def build_BSP(points):
 							l1.append(e2)
 							l2.append(e1)
 					else:
-						raise ValueError("impossible happend - crosspoint outside edge! %f" % u)
+						raise ValueError("Impossible happend - crosspoint outside edge! %f" % u)
 				except TypeError:
-					raise ValueError("impossible happend - can't find crosspoints!")
+					raise ValueError("Impossible happend - can't find crosspoints!")
 
 		root.left  = make_tree(l1)
+
+		# replace outer virtual nodes with real ones, that
+		# define side of edge (.leaf property) -- it is needed
+		# by tree drawing procedure, not algorithm!
 		if root.left is None:
 			root.left = BSP_node((0.0, 0.0), (1.0, 0.0), True)
 
@@ -83,12 +98,14 @@ def build_BSP(points):
 	
 	return make_tree(edges)
 
+
 def BSP_classify_point(root, P):
 	assert root is not None
 
 	node = root
 	while node:
 		inside = node.leaf
+		if inside is not None: break
 
 		if node.side(P) >= 0.0:
 			node   = node.left
@@ -191,7 +208,8 @@ class BSP_Demo(object):
 		Tkinter.Radiobutton(f, text="Split edge",   variable=i, value=1, command=set_function(self.split_edge)).pack(anchor=W)
 		Tkinter.Radiobutton(f, text="Delete point", variable=i, value=2, command=set_function(self.delete_point)).pack(anchor=W)
 		Tkinter.Radiobutton(f, text="Move point",   variable=i, value=3, command=set_function(self.move_point)).pack(anchor=W)
-		Tkinter.Radiobutton(f, text="Chec point",   variable=i, value=4, command=set_function(self.check_point)).pack(anchor=W)
+		Tkinter.Radiobutton(f, text="Check point",  variable=i, value=4, command=set_function(self.check_point)).pack(anchor=W)
+
 		Tkinter.Button(f, text="Flip normals",    command=self.flip_normals).pack(fill=X)
 		Tkinter.Button(f, text="Random points",   command=self.random_points).pack(fill=X)
 		Tkinter.Button(f, text="Set first point", command=self.rotate_points).pack(fill=X)
@@ -253,7 +271,6 @@ class BSP_Demo(object):
 				d  = dx*dx + dy*dy
 				if d < r:
 					return i
-		#while
 
 
 	def split_edge(self):
@@ -281,9 +298,8 @@ class BSP_Demo(object):
 	
 
 	def check_point(self):
-		root = self.BSP_tree
-
 		while True:
+			root = self.BSP_tree
 			P = self.click()
 
 			# remove all temporary objects
@@ -409,12 +425,15 @@ class BSP_Demo(object):
 
 import Tkinter
 import sys
-from Tkconstants import *
-from tkes import EventsSerializerTk as EventsSerializer, FunctionInterrupted
+from   Tkconstants import *
+from   tkes import EventsSerializerTk as EventsSerializer, FunctionInterrupted
 
 if __name__ == '__main__':
 	root = Tkinter.Tk()
 	app  = BSP_Demo(root)
+
+	# sample data:
+	# 216.0 102.0 140.0 68.0 40.0 230.0 144.0 227.0 183.0 273.0 245.0 170.5 334.0 196.0 359.0 72.0 205.0 18.0
 	if len(sys.argv) > 1:
 		tmp = map(float, sys.argv[1:])
 		app.points = zip(tmp, tmp[1:])[::2]
