@@ -30,7 +30,8 @@ from math import sqrt
 
 from poly_root import solve3, solve2
 from aabb2D    import bb_points, bb_crossing
-from utils2D   import len_sqr, len_sqrt, line_equation, lerp, dotprod2
+from utils2D   import len_sqr, len_sqrt, line_equation, lerp, dotprod2, intersect
+
 
 
 
@@ -62,7 +63,7 @@ def bbox(A, B, C, D):
 	# find extrema
 	# f(t)  = a*t^3 + b*t^2 + c*t + d
 	# f'(t) = 3a*t^2 + 2b*t + c
-	# f'(t) = 0
+	# find t that f'(t) = 0
 	
 	def is_root(t):
 		return zero(t.imag, 1e-10) and 0.0 <= t.real <= 1.0
@@ -242,7 +243,7 @@ def cc_intersections(p0, p1, is_flat):
 	p1 = (A1, B1, C1, D1).
 
 	Curves are splitted and when curve segments are flat
-	(see functions is_flat, is_flat2) intersection bettwen
+	(see functions is_flat, is_flat2) intersection between
 	stright lines are calculated.
 
 	Single intersection is given with 3-tuple:
@@ -256,21 +257,23 @@ def cc_intersections(p0, p1, is_flat):
 	while queue:
 		P0, P1 = queue.pop()
 		(p0, cbb0, ua, ub), (p1, cbb1, va, vb) = P0, P1
-		if bbox_intersect(cbb0, cbb1):
+		if bb_crossing(cbb0, cbb1):
 			flat0 = is_flat(*p0)
 			flat1 = is_flat(*p1)
 			if flat1 and flat0:
 				# calculate intersection
 				try:
 					u, v = intersect(p0[0], p0[3], p1[0], p1[3])
+				except NameError, e:
+					raise e
 				except:
 					pass
 				else:
-					if 0.0 <=u <= 1.0 and 0.0 <= v <= 1.0:
-						ui = ua + (ub-ua)*u
-						uv = va + (vb-va)*u
-						p  = lerp(p0[0], p0[3], v)
-						result.append((ui, uv, p))
+					if 0.0 <= u <= 1.0 and 0.0 <= v <= 1.0:
+						p = lerp(p0[0], p0[3], u)
+						u = ua + (ub-ua)*u
+						v = va + (vb-va)*v
+						result.append((u, v, p))
 				continue
 
 			if not flat0 and not flat1:
@@ -288,8 +291,8 @@ def cc_intersections(p0, p1, is_flat):
 			else:
 				p10, p11 = split(p1, 0.5)
 				vab = (va + vb)/2
-				queue.append(((p10, cbbox(*p10), va, vab), P0))
-				queue.append(((p11, cbbox(*p11), vab, vb), P0))
+				queue.append((P0, (p10, cbbox(*p10), va, vab)))
+				queue.append((P0, (p11, cbbox(*p11), vab, vb)))
 
 		else:
 			pass
