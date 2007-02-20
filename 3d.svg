@@ -1,0 +1,170 @@
+<?xml version="1.0" ?>
+<!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'>
+
+<svg height="300px" width="700px" xmlns="http://www.w3.org/2000/svg" id="canvas"
+	onload="init(evt)"
+	onclick="onClick()"
+>
+
+<script type="text/javascript">
+<![CDATA[
+var svgns	= "http://www.w3.org/2000/svg";
+var angle	= 0.0;
+var animate	= true;
+
+function init(evt) {
+	svgdoc  = evt.target.ownerDocument;
+	svgroot = svgdoc.documentElement;
+
+	create_faces(vertices, indices);
+	setTimeout("rotate()", 500);
+}
+
+vertices = [
+	[0, 0, 1.054093],
+	[0.6324555, 0, 0.843274],
+	[-0.421637, 0.4714045, 0.843274],
+	[-0.07027284, -0.6285394, 0.843274],
+	[0.843274, 0.4714045, 0.421637],
+	[0.5621827, -0.6285394, 0.6324555],
+	[-0.9135469, 0.3142697, 0.421637],
+	[-0.2108185, 0.942809, 0.421637],
+	[-0.5621827, -0.7856742, 0.421637],
+	[0.9838197, 0.3142697, -0.2108185],
+	[0.421637, 0.942809, 0.2108185],
+	[0.7027284, -0.7856742, 0],
+	[-0.7027284, 0.7856742, 0],
+	[-0.9838197, -0.3142697, 0.2108185],
+	[-0.421637, -0.942809, -0.2108185],
+	[0.5621827, 0.7856742, -0.421637],
+	[0.9135469, -0.3142697, -0.421637],
+	[0.2108185, -0.942809, -0.421637],
+	[-0.5621827, 0.6285394, -0.6324555],
+	[-0.843274, -0.4714045, -0.421637],
+	[0.07027284, 0.6285394, -0.843274],
+	[0.421637, -0.4714045, -0.843274],
+	[-0.6324555, 0, -0.843274],
+	[0, 0, -1.054093]
+];
+
+indices = [
+	// 6-sided faces
+	[0,1,4,10,7,2],
+	[0,2,6,13,8,3],
+	[1,5,11,16,9,4],
+	[3,8,14,17,11,5],
+	[6,12,18,22,19,13],
+	[7,10,15,20,18,12],
+	[9,16,21,23,20,15],
+	[14,19,22,23,21,17],
+
+	// 4-sided faces
+	[0,3,5,1],
+	[2,7,12,6],
+	[4,9,15,10],
+	[8,13,19,14],
+	[11,17,21,16],
+	[18,20,23,22],
+];
+
+
+function transform(vertices, angle) {
+	var transformed = new Array(vertices.length);
+
+	var i, x, y, z, x1, y1, z1;
+	var ca = Math.cos(angle);
+	var sa = Math.sin(angle);
+
+	for (i=0; i < vertices.length; i++) {
+		[x, y, z] = vertices[i];
+
+		x1 = x * ca - z * sa;
+		z1 = x * sa + z * ca;
+		transformed[i] = [x1, y, z1];
+	}
+	return transformed;
+}
+
+function create_faces(vertices, indices) {
+	var i, j, poly, d;
+	var x, y, z;
+	for (i=0; i < indices.length; i++) {
+		poly = svgdoc.createElementNS(svgns, "polygon");
+		d = "";
+		for (j=0; j < indices[i].length; j++) {
+			[x, y, z] = vertices[indices[i][j]];
+			x = x * 100 + 200
+			y = y * 100 + 200
+
+			d = d + " " + x + "," + y;
+		}
+
+		poly.setAttributeNS(null, "points", d);
+		if (indices[i].length == 4)
+			poly.setAttributeNS(null, "fill",   "blue");
+		else
+			poly.setAttributeNS(null, "fill",   "red");
+
+		poly.setAttributeNS(null, "stroke", "black");
+		poly.setAttributeNS(null, "style", "opacity:0.8");
+		poly.setAttributeNS(null, "id", "f" + i);
+		svgroot.appendChild(poly);
+	}
+}
+
+function update_view(vertices, indices) {
+	var i, j, poly, d;
+	var x, y, z, minz;
+
+	var faces = new Array(indices.length)
+	for (i=0; i < indices.length; i++) {
+		poly = svgdoc.getElementById('f'+i);
+		d = "";
+		maxz = -100000000.0;
+		for (j=0; j < indices[i].length; j++) {
+			[x, y, z] = vertices[indices[i][j]];
+			x = x * 100 + 200
+			y = y * 100 + 200
+
+			d = d + " " + x + "," + y;
+			if (z > maxz) maxz = z;
+		}
+		
+		faces[i] = [maxz, svgroot.removeChild(poly)];
+		poly.setAttributeNS(null, "points", d);
+	}
+
+	function sort_fun(a, b) {
+		if (a[0] < b[0]) return -1;
+		if (a[0] > b[0]) return +1;
+		return 0;
+	}
+
+	faces.sort(sort_fun);
+	for (i=0; i < faces.length; i++) {
+		svgroot.appendChild(faces[i][1]);
+	}
+}
+
+function rotate() {
+	update_view(transform(vertices, angle), indices);
+	angle = angle + 0.0625;
+	if (animate)
+		setTimeout("rotate()", 10);
+}
+
+function onClick() {
+	animate = !animate;
+	if (animate)
+		rotate();
+	else
+		clearTimeout();
+
+}
+
+// ]]>
+</script>
+	</svg>
+<!--
+	vim: ts=4 sw=4 nowrap
+-->
