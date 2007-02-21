@@ -7,7 +7,9 @@
 
 # changelog
 """
-07.02.2007
+21.02.2007
+	+ point_at_segment
+ 7.02.2007
 	+ segments_inter
 	+ line_segment_inter
 23.11.2006
@@ -211,6 +213,20 @@ def line_segment_inter(L1, L2, A, B):
 		_, v = res
 		if (1.0 >= v >= 0.0):
 			return lerp(A,B, v)
+
+
+def point_at_segment((xa, ya), (xb, yb), (xc, yc)):
+	"""
+	Point A, B, C are colinear.
+	Function detects if point C lies on segment AB.
+	"""
+	if xa == xb:	# vert.
+		return (ya <= yc <= yb) or (yb <= yc <= ya)
+	elif ya == yb:	# horiz.
+		return (xa <= xc <= xb) or (xb <= xc <= xa)
+	else:
+		t = (xc-xa)/(xb-xa)
+		return 0.0 <= t <= 1.0
 
 
 def equal(a, b, EPS=1e-10):
