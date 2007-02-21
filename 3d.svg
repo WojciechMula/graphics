@@ -9,7 +9,8 @@
 <script type="text/javascript">
 <![CDATA[
 var svgns	= "http://www.w3.org/2000/svg";
-var angle	= 0.0
+var anglex	= 0.0
+var angley	= 0.0
 var animate	= true;
 
 function init(evt) {
@@ -68,19 +69,26 @@ indices = [
 ];
 
 
-function transform(vertices, angle) {
+function transform(vertices, anglex, angley) {
 	var transformed = new Array(vertices.length);
 
 	var i, x, y, z, x1, y1, z1;
-	var ca = Math.cos(angle);
-	var sa = Math.sin(angle);
+	var cax = Math.cos(anglex);
+	var sax = Math.sin(anglex);
+	var cay = Math.cos(angley);
+	var say = Math.sin(angley);
 
 	for (i=0; i < vertices.length; i++) {
 		[x, y, z] = vertices[i];
 
-		x1 = x * ca - z * sa;
-		z1 = x * sa + z * ca;
-		transformed[i] = [x1, y, z1];
+		x1 = x * cax - z * sax;
+		z1 = x * sax + z * cax;
+		y1 = y;
+
+		x = x1;
+		y = y1 * cay - z1 * say;
+		z = y1 * say + z1 * cay;
+		transformed[i] = [x, y, z];
 	}
 	return transformed;
 }
@@ -149,8 +157,9 @@ function update_view(vertices, indices) {
 }
 
 function rotate() {
-	update_view(transform(vertices, angle), indices);
-	angle = angle + 0.0625;
+	update_view(transform(vertices, anglex, angley), indices);
+	anglex = anglex + 0.0625;
+	angley = angley + 0.0625*2;
 	if (animate)
 		setTimeout("rotate()", 10);
 }
