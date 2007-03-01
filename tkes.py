@@ -4,10 +4,11 @@ Tkinter Events Serializer
 
 author: Wojciech Mula
         wojciech_mula@poczta.onet.pl
+		http://wmula.republika.pl/
 
 license: BSD
 
-$Id: tkes.py,v 1.7 2007-01-05 22:41:14 wojtek Exp $
+$Id: tkes.py,v 1.8 2007-03-01 18:29:46 wojtek Exp $
 """
 
 import Tkinter
@@ -302,7 +303,8 @@ class EventsSerializerThreads(object):
 		if self.__fun:
 			# empty queue
 			try:
-				self.__queue.get(False)
+				while True:
+					self.__queue.get_nowait()
 			except Queue.Empty:
 				pass
 
