@@ -21,7 +21,9 @@
 __all__ = [
 	'isconvex',
 	'vertex_order',
-	'point_in_convex_polygon'
+	'point_in_convex_polygon',
+	'point_in_triangle',
+	'intersection_L_CP',
 ]
 
 from utils2D import intersect

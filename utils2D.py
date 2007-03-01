@@ -35,11 +35,6 @@
 
 from math import sqrt, hypot
 
-try:
-	from isconvex import *
-except ImportError:
-	pass
-
 
 def lerp1D(a, b, t):
 	return a + (b-a)*t
