@@ -3,7 +3,7 @@
 # 5.12.2006
 #
 # Public domain
-#
+# $Date: 2007-03-01 17:39:58 $, $Revision: 1.3 $
 "Polygons intersection; solved using Sutherland-Hodgman algorithm."
 
 __all__ = ['intersection']
