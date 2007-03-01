@@ -1,22 +1,32 @@
-"""
-This is sample docstring!
-"""
+# -*- coding: iso-8859-2 -*-
+# Wojciech Mu³a, http://wmula.republika.pl
+# 5.12.2006
+#
+# Public domain
+#
+"Polygons intersection; solved using Sutherland-Hodgman algorithm."
 
 __all__ = ['intersection']
 
 import utils2D
 
 def Sutherland_Hodgman(polygon, convex):
-	n      = len(convex)
-	result = polygon[:]
-	side   = utils2D.vertex_order(convex)
-	assert side in ['CW', 'CCW'], ("side is %s" % side)
+	"""
+	Returns intersection of polygons, where:
+
+	* polygon - any polygon (list of pairs (x,y))
+	* convex  - convex polygon
+	"""
+	n         = len(convex)
+	result    = polygon[:]
+	direction = utils2D.vertex_order(convex)
+	assert direction in ['CW', 'CCW'], ("Polygon not convex (%s)" % direction)
 
 	for i in xrange(n):
 		j  = (i+1) % n
-		if side == 'CCW':
+		if direction == 'CCW':
 			a, b, c = utils2D.line_equation(convex[i], convex[j])
-		else:
+		else: # CW
 			a, b, c = utils2D.line_equation(convex[j], convex[i])
 
 		result  = Sutherland_Hodgman_step(result, (a, b, c))
@@ -31,7 +41,7 @@ def Sutherland_Hodgman_step(polygon, (a,b,c)):
 	Line is given as set of coefficients a, b, c of
 	equation a*x + b*y + c = 0.
 
-	Function returns polygon that lie on the "positive"
+	Function returns polygon that lie at the "positive"
 	side of line.
 	"""
 	n = len(polygon)
@@ -43,16 +53,15 @@ def Sutherland_Hodgman_step(polygon, (a,b,c)):
 		xn, yn = polygon[(i+1) % n]
 		side_n = (a*xn + b*yn + c) >= 0.0
 
-		# both points on "positive" side
+		# both points on "positive" side: save N
 		if side_s and side_n:
 			result.append((xn, yn))
 
-		# both point on "negative" side
+		# both point on "negative" side: do not save anything
 		elif (not side_s) and (not side_n):
-			# do not save any point
 			pass
 
-		# point on opposite sides
+		# point on opposite sides: clip, and save P, or P and N
 		else:
 			t = utils2D.intersect2((xs, ys), (xn, yn), (a, b, c))
 			P = utils2D.lerp((xs, ys), (xn, yn), t)
@@ -65,7 +74,7 @@ def Sutherland_Hodgman_step(polygon, (a,b,c)):
 		xs = xn
 		ys = yn
 		side_s = side_n
-	#rof
+	#for
 
 	return result
 
