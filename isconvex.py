@@ -6,10 +6,25 @@
 
 # changelog
 """
-21.02.2007 - point_in_convex_polygon
- 3.01.2007 - vertex_order, isconvex expressed using vertex_order
- 9.05.2005 - isconvex
+ 1.03.2007
+	+ point_in_triangle (25.10.2006)
+	+ intersection_L_CP (18.10.2006)
+21.02.2007
+	+ point_in_convex_polygon (& testcase)
+ 3.01.2007
+	+ vertex_order
+	* isconvex expressed using vertex_order
+ 9.05.2005
+	+ isconvex
 """
+
+__all__ = [
+	'isconvex',
+	'vertex_order',
+	'point_in_convex_polygon'
+]
+
+from utils2D import intersect
 
 def isconvex(poly):
 	"""
@@ -41,7 +56,7 @@ def vertex_order(poly):
 	#
 	#   First two points defines a line, and we check on which line's side
 	#   lie third point. If all "third" points lie on the same side then
-	#   polygon is convex.
+	#   polygon is convex.  This side defines also order of points: CCW/CW.
 
 	valid_side = None
 	for i in xrange(n):
@@ -93,6 +108,76 @@ def point_in_convex_polygon(points, (x, y)):
 	
 	return True
 
+
+def intersection_L_CP(polygon, A, B, coefs=None):
+	"""
+	Returns intersection of line and convex polygon.
+	Line is defined either by two points (A, B);
+	additionaly	coefs of line equation (a, b, c) can
+	be passed.
+	 
+	Line: a*x + b*y + c = 0
+	Polygon: a set of pairs
+	
+	Calculation are done for parametric representation:
+	A + t*(B-A), where t \in R. Function returns up to
+	two t values that represents cross points of line
+	and polygon.
+	"""
+	assert len(polygon) >= 3
+
+	try:
+		a,b,c = coefs
+	except TypeError:
+		a,b,c = line_equation(A, B)
+
+	xi, yi = polygon[0]	# get first point
+	sidei  = a*xi + b*yi + c
+	n      = len(polygon)
+	t      = []
+	for i in xrange(n):
+		j      = (i+1) % n
+
+		xj, yj = polygon[j]
+		sidej  = a*xj + b*yj + c
+
+		if sidei != sidej:	# edge i-j crossing the line
+			try:
+				u, v = intersect(A, B, (xi, yi), (xj, yj))
+				if 0.0 <= v < 1.0:
+					t.append(u)
+					if len(t) == 2:
+						# convex polygon and line has up to 2 common points
+						return t
+			except TypeError:
+				# no intersection found (weird...)
+				pass
+
+		xi = xj
+		yi = yj
+		sidei = sidej
+	
+	return t
+
+
+def point_in_triangle((xa,ya), (xb,yb), (xc,yc), (x,y)):
+	def side(x,y, x0,y0, x1,y1):
+		dx = x1-x0 
+		dy = y1-y0
+		x  =  x-x0
+		y  =  y-y0
+
+		# f(x,y) = ax+by = dy*x - dx*y
+		return dy*x - dx*y >= 0.0
+
+	sideAB = side(x,y, xa,ya, xb,yb)
+	sideBC = side(x,y, xb,yb, xc,yc)
+	sideCA = side(x,y, xc,yc, xa,ya)
+
+	return (sideAB == sideBC) and (sideAB == sideCA) and (sideBC ==	sideCA)
+
+
+## tests ###############################################################
 
 if __name__ == '__main__':
 	a = 0.0
