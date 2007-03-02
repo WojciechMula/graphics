@@ -4,7 +4,7 @@
 #
 # Wojciech Mu³a
 # wojciech_mula@poczta.onet.pl
-# $Date: 2007-03-02 06:25:39 $, $Revision: 1.4 $
+# $Date: 2007-03-02 06:26:59 $, $Revision: 1.5 $
 
 # changelog
 '''
@@ -25,9 +25,7 @@ AABB is a pair of points: left upper & right lower corner
 """
 
 def bb_points(P):
-	"""
-	AABB of set of points (or polygon, polyline, etc.)
-	"""
+	"AABB of set of points (or polygon, polyline, etc.)"
 	minx = min(x for x, y in P)
 	maxx = max(x for x, y in P)
 	miny = min(y for x, y in P)
@@ -37,9 +35,7 @@ def bb_points(P):
 
 
 def add_point(((minx, miny), (maxx, maxy)), (x, y)):
-	"""
-	AABB of existing bounding box and point.
-	"""
+	"AABB of existing bounding box and point"
 	if   x < minx: minx = x
 	elif x > maxx: maxx = x
 	
@@ -50,16 +46,14 @@ def add_point(((minx, miny), (maxx, maxy)), (x, y)):
 
 
 def add_bbox(BB, ((minx, miny), (maxx, maxy))):
-	"""
-	AABB of two bboxes
-	"""
+	"AABB of two bboxes"
 	BB = add_point(BB, (minx, miny))
 	BB = add_point(BB, (maxx, maxy))
 	return BB
 
 
 def add_points(((minx, miny), (maxx, maxy)), P):
-	"""
+	"
 	AABB of existing bounding box and
 	set of points (or polygon, polyline, etc.)
 	"""
@@ -70,29 +64,21 @@ def add_points(((minx, miny), (maxx, maxy)), P):
 
 
 def point_inside(((minx, miny), (maxx, maxy)),  (x, y)):
-	"""
-	Returns True if point lie inside of AABB
-	"""
+	"Returns True if point lie inside of AABB"
 	return minx <= x <= maxx and miny <= y <= maxy
 
 
 def bb_inside(BB1, ((minx, miny), (maxx, maxy))):
-	"""
-	Returns True if BB2 lie inside BB1
-	"""
+	"Returns True if BB2 lie inside BB1"
 	return p_inside(BB1, (minx, miny)) and p_inside(BB1, (maxx, maxy))
 
 def bb_crossing(((minx1, miny1), (maxx1, maxy1)), ((minx2, miny2), (maxx2, maxy2))):
-	"""
-	Returns true if BB1 and BB2 are crossing
-	"""
+	"Returns true if BB1 and BB2 are crossing"
 	return not (maxx2 < minx1 or minx2 > maxx1) and \
 	       not (maxy2 < miny1 or miny2 > maxy1)
 
 def intersection(((minx1, miny1), (maxx1, maxy1)), ((minx2, miny2), (maxx2, maxy2))):
-	"""
-	Returns intersection of two bboxes, or None if there is no intersection
-	"""
+	"Returns intersection of two bboxes, or None if there is no intersection"
 	minx = max(minx1, minx2)
 	miny = max(miny1, miny2)
 	
