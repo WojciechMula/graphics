@@ -4,9 +4,12 @@
 #
 # Wojciech Mu³a
 # wojciech_mula@poczta.onet.pl
+# $Date: 2007-03-02 06:25:39 $, $Revision: 1.4 $
 
 # changelog
 '''
+ 2.03.2006:
+	+ intersection
 11.11.2006:
 	+ bb_points
 	+ add_point
@@ -85,5 +88,19 @@ def bb_crossing(((minx1, miny1), (maxx1, maxy1)), ((minx2, miny2), (maxx2, maxy2
 	"""
 	return not (maxx2 < minx1 or minx2 > maxx1) and \
 	       not (maxy2 < miny1 or miny2 > maxy1)
+
+def intersection(((minx1, miny1), (maxx1, maxy1)), ((minx2, miny2), (maxx2, maxy2))):
+	"""
+	Returns intersection of two bboxes, or None if there is no intersection
+	"""
+	minx = max(minx1, minx2)
+	miny = max(miny1, miny2)
+	
+	maxx = min(maxx1, maxx2)
+	maxy = min(maxy1, maxy2)
+	if minx > maxx or miny > maxy:
+		return None # no intersection
+	else:
+		return ((minx, miny), (maxx, maxy))
 
 # vim: ts=4 sw=4 nowrap noexpandtab
