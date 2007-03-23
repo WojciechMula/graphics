@@ -1,78 +1,35 @@
-from math import sin, cos, pi
+from math import sin, cos, sqrt, pi, atan, atan2
+import sys
+
+def ellipse_aabb(a, b, rot=0.0):
+	dx = sin(rot)
+	dy = cos(rot)
+	return atan2(dy*b/a, dx), atan2(-dx*b/a, dy)
+
 
 def arc_bbox(x0, y0, rx, ry, start=0.0, end=2*pi, rot=0.0):
 	cr = cos(rot)
 	sr = sin(rot)
 
 	def P(a):
-		x = sin(a)*rx
-		y = cos(a)*ry
+		x = cos(a)*rx
+		y = sin(a)*ry
 		return (x*cr - y*sr, x*sr + y*cr)
 	
-	def avg((xa,ya), (xb,yb)):
-		return ((xa+xb)/2, (ya+yb)/2)
-	
-	def dist2((xa,ya), (xb,yb)):
-		dx = xa-xb
-		dy = ya-yb
-		return dx*dx + dy*dy
-		
-	if rot == 0.0:
-		angles = [0.0, math.pi/2, math.pi, 3*math.pi/2]
-
-	else:
-		k   = 65
-		da  = 2*pi/(k-1)
-		pts = [P(i*da) for i in xrange(k)]
-		
-		arcs = []
-		for i in xrange(k-1):
-			a1 = i*da
-			a2 = (i+1)*da
-			p1 = pts[i]
-			p2 = pts[i+1]
-
-			arcs.append( (a1,p1, a2,p2) )
-
-		def locate_extremum(initial, cmp, min_d=0.001):
-			min_d = min_d * min_d
-			queue = initial[:]
-			while queue:
-				if len(queue) == 1:
-					(a1, p1, a2, p2) = item = queue.pop()
-					aa = (a1+a2)/2
-					pa = P(aa)
-					if dist2(pa, avg(p1, p2)) <= min_d:
-						return aa
-
-					if cmp(avg(p1,pa), avg(pa,p2)):
-						queue.append((a1, p1, aa, pa))
-					else:
-						queue.append((aa, pa, a2, p2))
-
-				else:
-					(a10, p10, a20, p20) = item0 = queue.pop()
-					(a11, p11, a21, p21) = item1 = queue.pop()
-					if cmp(avg(p10,p20), avg(p11,p21)):
-						queue.append(item0)
-					else:
-						queue.append(item1)
-
-		a1 = locate_extremum(arcs, lambda (x1,y1),(x2,y2): x1 > x2)
-		a2 = locate_extremum(arcs, lambda (x1,y1),(x2,y2): y1 > y2)
-		angles = [a1, a1+pi, a2, a2+pi]
-	#endif
+	a1, a2 = ellipse_aabb(rx, ry, rot)
+	angles = [a1, a2, a1+pi, a2+pi]
 	
 	X = [P(start)[0], P(end)[0]]
 	Y = [P(start)[1], P(end)[1]]
-	import sys
+	
 	if end > 2*pi:
 		start -= 2*pi
 		end   -= 2*pi
+
 	for a in angles:
 		if a > end:
 			a -= 2*pi
-		sys.stderr.write("%s <= %s <= %s\n" % (start, a, end))
+		
 		x, y = P(a)
 		color = "red"
 		if start <= a <= end:
@@ -95,8 +52,8 @@ def arc_points(x0, y0, rx, ry, start, end, rot):
 	sr = sin(rot)
 
 	def P(a):
-		x = sin(a)*rx
-		y = cos(a)*ry
+		x = cos(a)*rx
+		y = sin(a)*ry
 		return (x*cr - y*sr, x*sr + y*cr)
 	
 	n  = 360/8
@@ -119,6 +76,8 @@ for i in xrange(10):
 #	y = 200
 	rx = (0.1+random())*80
 	ry = (0.1+random())*80
+	# XXX
+	#ry = rx
 	start = random()*2*pi
 	end   = start + random()*2*pi
 	rot   = random()*2*pi
