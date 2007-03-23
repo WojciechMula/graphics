@@ -7,6 +7,8 @@
 
 # changelog
 """
+23.03.2007
+	+ lerpd
 21.02.2007
 	+ point_at_segment
  7.02.2007
@@ -42,6 +44,10 @@ def lerp1D(a, b, t):
 
 def lerp((xa, ya), (xb, yb), t):
 	return (xa + (xb-xa)*t, ya + (yb-ya)*t)
+
+
+def lerpd((xa, ya), (dx, dy), t):
+	return (xa + dx*t,  ya + dy*t)
 
 
 def line_equation((xa, ya), (xb, yb)):
@@ -212,7 +218,7 @@ def line_segment_inter(L1, L2, A, B):
 
 def point_at_segment((xa, ya), (xb, yb), (xc, yc)):
 	"""
-	Point A, B, C are colinear.
+	Points A, B, C are colinear.
 	Function detects if point C lies on segment AB.
 	"""
 	if xa == xb:	# vert.
