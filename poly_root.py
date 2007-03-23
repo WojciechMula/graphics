@@ -7,34 +7,39 @@
 # Wojciech Mu³a
 # wojciech_mula@poczta.onet.pl
 
-# changelog
-'''
-11.10.2006:
-	+ solve1
-8-10.11.2006:
-	+ solve3
-	+ solve2
-'''
+# changelog:
+#
+# 23.03.2007
+# 	* solve3 fixed
+# 11.10.2006:
+# 	+ solve1
+# 8-10.11.2006:
+# 	+ solve3
+# 	+ solve2
 
 from cmath import *
 
-def solve1(a, b):
+__all__ = ["solve1", "solve2", "solve3"]
+
+
+def solve1(a, b, EPS=1e-6):
 	"""
 	Returns root of equation a*x + b = 0.
 	"""
 	# a*x + b = 0
-	if zero(a, 1e-6):
+	if abs(a) < EPS:
 		return ()
 	else:
 		return (complex(-b/a),)
 
-def solve2(a, b, c):
+
+def solve2(a, b, c, EPS=1e-6):
 	"""
 	Returns all roots (real and complex)
 	of equation a*x^2 + b*x^1 + c = 0.
 	"""
 
-	if zero(a, 1e-6):
+	if abs(a) < EPS:
 		return solve1(b, c)
 	else:
 		d  = sqrt(b*b - 4*a*c)
@@ -42,7 +47,8 @@ def solve2(a, b, c):
 		x2 = (-b + d)/(2*a)
 		return (x1, x2)
 
-def solve3(a, b, c, d):
+
+def solve3(a, b, c, d, EPS=1e-6):
 	"""
 	Returns all roots (real and complex)
 	of equation a*x^3 + b*x^2 + c*x + d = 0.
@@ -51,7 +57,7 @@ def solve3(a, b, c, d):
 	b  = float(b)
 	c  = float(c)
 	d  = float(d)
-	if zero(a, 1e6):
+	if abs(a) < EPS:
 		return solve2(b, c, d)
 
 	p  = 1.0/3.0 * (3*a*c - b*b)/(3*a*a)
@@ -87,13 +93,5 @@ def solve3(a, b, c, d):
 
 	return (y1+z, y2+z, y3+z)
 
-def sq3(x):
-	if x > 0.0:
-		return x**(1.0/3.0)
-	else:
-		return -(-x)**(1.0/3.0)
-
-def zero(x, eps):
-	return abs(x) < eps
 
 # vim: ts=4 sw=4 nowrap
