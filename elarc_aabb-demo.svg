@@ -1,0 +1,175 @@
+<?xml version="1.0" ?>
+<!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'>
+
+<svg height="400px" width="400px" xmlns="http://www.w3.org/2000/svg" id="canvas">
+	<title>AABB of rotated elliptical arc</title>
+
+	<polyline id="ellipse"
+		points=""
+		fill="none"
+		stroke="#ddd"
+	/>
+	
+	<polyline id="arc"
+		points=""
+		fill="none"
+		stroke="black"
+		stroke-width="1"
+	/>
+	
+	<rect id="bbox"
+		x="0"
+		y="0"
+		width="0"
+		height="0"
+		fill="none"
+		stroke="red"
+		stroke-width="0.5"
+	/>
+
+	<text id="status"
+		x="5"
+		y="30"
+	>click</text>
+
+<script type="text/javascript">
+<![CDATA[
+/*
+	Wojciech Mu³a, http://wmula.republika.pl/
+	24.03.2007
+*/
+
+function OnMouseClick(ev) {
+	var n = 256;
+	var item;
+
+	var x0 = 200.0;
+	var y0 = 200.0;
+	var rx = (0.1 + Math.random())*170;
+	var ry = (0.1 + Math.random())*170;
+
+	var pi    = Math.PI;
+	var start = Math.random()*2*pi;
+	var end   = Math.random()*2*pi + start;
+	var rot   = Math.random()*2*pi;
+
+	var cr = Math.cos(rot);
+	var sr = Math.sin(rot);
+	
+	var points = new Array(2*n);
+	var i, x, y;
+	var da = 2*pi/(n-1);
+	for (i=0; i<n; i++) {
+		[x, y] = ep(rx, ry, da*i, rot);
+		points[2*i + 0] = x + x0;
+		points[2*i + 1] = y + y0;
+	}
+
+	item = document.getElementById("ellipse");
+	item.setAttribute("points", points.join(" "));
+	
+	var da = (end-start)/(n-1);
+	for (i=0; i<n; i++) {
+		[x, y] = ep(rx, ry, start + da*i, rot);
+		points[2*i + 0] = x + x0;
+		points[2*i + 1] = y + y0;
+	}
+
+	item = document.getElementById("arc");
+	item.setAttribute("points", points.join(" "));
+
+	var xmin, ymin, xmax, ymax;
+	[xmin, ymin, xmax, ymax] = elliptical_arc_aabb(x0, y0, rx, ry, start, end, rot);
+
+	item = document.getElementById("bbox");
+	item.setAttribute("x", xmin);
+	item.setAttribute("y", ymin);
+	item.setAttribute("width",  xmax-xmin);
+	item.setAttribute("height", ymax-ymin);
+}
+
+
+// returns point on ellipse
+function point(rx, ry, angle) {
+	return [rx*Math.cos(angle), ry*Math.sin(angle)];
+}
+
+
+// rotate point (x,y)
+function rotate(x, y, angle) {
+	var ca = Math.cos(angle);
+	var sa = Math.sin(angle);
+	return [x*ca - y*sa, 
+	        x*sa + y*ca];
+}
+
+
+// returns point on rotated ellipse
+function ep(rx, ry, angle, rot) {
+	var x, y;
+	[x, y] = point(rx, ry, angle);
+	return rotate(x, y, rot);
+}
+
+
+function elliptical_arc_aabb(x0, y0, rx, ry, start, end, rot) {
+	var cr = Math.cos(rot);
+	var sr = Math.sin(rot);
+	var pi = Math.PI;
+	
+	function angle(a) {
+		if (a < 0.0)  return a + 2*pi; else
+		if (a > 2*pi) return a - 2*pi; else
+		return a;
+	}
+
+	start = angle(start);
+	end   = angle(end);
+
+	var a1 = Math.atan2( cr*ry/rx, sr);
+	var a2 = Math.atan2(-sr*ry/rx, cr);
+
+	var x, y;
+	[x, y] = ep(rx, ry, start, rot);
+
+	var xmin = x;
+	var xmax = x;
+	var ymin = y;
+	var ymax = y;
+
+	var angles = [a1, a2, a1+pi, a2+pi, end];
+	for (i in angles) {
+		var a = angle(angles[i]);
+		if (start < end) {
+			if (start <= a && a <= end) {
+				[x, y] = ep(rx, ry, a, rot);
+				xmin = Math.min(x, xmin);
+				xmax = Math.max(x, xmax);
+				ymin = Math.min(y, ymin);
+				ymax = Math.max(y, ymax);
+			}
+		}
+		else {
+			if (!(end < a && a < start)) {
+				[x, y] = ep(rx, ry, a, rot);
+				xmin = Math.min(x, xmin);
+				xmax = Math.max(x, xmax);
+				ymin = Math.min(y, ymin);
+				ymax = Math.max(y, ymax);
+			}
+		}
+	}
+
+	return [x0 + xmin, y0 + ymin, x0 + xmax, y0 + ymax];
+}
+
+	
+document.getElementById("canvas").onclick = OnMouseClick;
+
+// vim: ts=4 sw=4 nowrap
+// ]]>
+	</script>
+	</svg>
+<!--
+	vim: ts=4 sw=4 nowrap ft=javascript
+-->
