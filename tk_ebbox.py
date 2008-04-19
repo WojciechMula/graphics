@@ -33,7 +33,7 @@ def qbezier_bounds((x0, y0), (x1, y1), (x2, y2)):
 
 	# find extremas:
 	#	1) x(0) = x0
-	#	2) x(1) = y0
+	#	2) x(1) = x2
 	#	3) f(t_e), where f'(t_e)=0 and t_e in (0,1)
 	x = [x0,x2]
 	if abs(Ax) > 1e-10:
