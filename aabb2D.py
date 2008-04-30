@@ -4,7 +4,7 @@
 #
 # Wojciech Mu³a
 # wojciech_mula@poczta.onet.pl
-# $Date: 2007-03-02 06:26:59 $, $Revision: 1.5 $
+# $Date: 2008-04-30 10:03:06 $, $Revision: 1.6 $
 
 # changelog
 '''
@@ -53,7 +53,7 @@ def add_bbox(BB, ((minx, miny), (maxx, maxy))):
 
 
 def add_points(((minx, miny), (maxx, maxy)), P):
-	"
+	"""
 	AABB of existing bounding box and
 	set of points (or polygon, polyline, etc.)
 	"""
