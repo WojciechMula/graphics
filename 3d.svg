@@ -3,22 +3,33 @@
 
 <svg height="300px" width="700px" xmlns="http://www.w3.org/2000/svg" id="canvas"
 	onload="init(evt)"
-	onclick="onClick()"
+	onclick="onClick(evt)"
+	onmousemove="onMouseMove(evt)"
 >
 
 <script type="text/javascript">
 <![CDATA[
+/*
+
+	By Wojciech Mu³a, http://wm.ite.pl
+	
+	$Date: 2009-02-20 21:25:11 $, $Revision: 1.5 $
+
+	Public domain
+
+ */
 var svgns	= "http://www.w3.org/2000/svg";
 var anglex	= 0.0
 var angley	= 0.0
-var animate	= true;
+var animate = false
+var fps = 20
 
 function init(evt) {
 	svgdoc  = evt.target.ownerDocument;
 	svgroot = svgdoc.documentElement;
 
 	create_faces(vertices, indices);
-	setTimeout("rotate()", 50);
+	setTimeout("update_view(transform(vertices, anglex, angley), indices)", 50);
 }
 
 vertices = [
@@ -167,17 +178,27 @@ function rotate() {
 		update_view(transform(vertices, anglex, angley), indices);
 		anglex = anglex + 0.0625;
 		angley = angley + 0.0625*2;
-		setTimeout("rotate()", 10);
+		setTimeout("rotate()", fps);
 	}
 }
 
-function onClick() {
+function onClick(evt) {
 	animate = !animate;
 	if (animate)
 		rotate();
 	else
 		clearTimeout();
 
+}
+
+function onMouseMove(evt) {
+	if (animate) {
+		clearTimeout();
+		animate = false;
+	}
+	anglex = evt.pageX/100.0;
+	angley = evt.pageY/100.0;
+	setTimeout("update_view(transform(vertices, anglex, angley), indices)", fps);
 }
 
 // ]]>
