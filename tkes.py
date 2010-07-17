@@ -4,7 +4,7 @@ Tkinter Events Serializer
 
 author: Wojciech Mula
         wojciech_mula@poczta.onet.pl
-		http://wmula.republika.pl/
+		http://0x80.pl/
 
 license: BSD
 
