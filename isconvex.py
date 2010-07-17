@@ -1,7 +1,7 @@
 # -*- coding: iso-8859-2 -*-
 # Convex polygon utils
 #
-# Wojciech Muła, http://wmula.republika.pl/
+# Wojciech Muła, http://0x80.pl/
 # public domain
 
 # changelog

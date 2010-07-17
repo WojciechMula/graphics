@@ -1,5 +1,5 @@
 # -*- coding: iso-8859-2 -*-
-# Wojciech Muła, http://wmula.republika.pl/
+# Wojciech Muła, http://0x80.pl/
 # 5.12.2006
 #
 # Public domain
