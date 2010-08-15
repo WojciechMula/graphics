@@ -2,7 +2,7 @@
 #
 # Bezier curves intersection -- tkinter demo
 #
-# Wojciech Mu³a, http://www.republika.pl/wmula/
+# Wojciech Mu³a, http://0x80.pl
 # 15.02.2007
 #
 # Public domain

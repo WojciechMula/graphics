@@ -5,7 +5,7 @@
 # Three different methods are used to determine
 # flattenes of Bezier curve
 #
-# Wojciech Mu³a, http://www.republika.pl/wmula/
+# Wojciech Mu³a, http://0x80.pl
 # 5-8.02.2007
 #
 # Public domain
