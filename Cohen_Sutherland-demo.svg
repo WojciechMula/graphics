@@ -2,7 +2,7 @@
 <!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'>
 
 <svg height="300px" width="700px" xmlns="http://www.w3.org/2000/svg" id="canvas">
-	<title>Cohen-Sutherland algorithm demo by Wojciech Mula</title>
+	<title>Cohen-Sutherland algorithm (demo by Wojciech Muła)</title>
 	<desc>
 	Click near one of segment's endpoints, then drag it.
 	http://en.wikipedia.org/wiki/Line_clipping
@@ -18,12 +18,12 @@
 	<line x1="20" y1="80" x2="200" y2="100" id="line" stroke="black" style="stroke-width:0.5px"/>
 	<line x1="0" y1="0" x2="0" y2="0" id="clipped" stroke="#0f0" style="stroke-width:2.0px; display: none"/>
 
-	<text x="5" y="30" id="status" />
+	<text x="5" y="30" id="status">click near endpoint to move segment</text>
 <script type="text/javascript">
 <![CDATA[
 /*
 	Cohen-Sutherland clipping demo
-	Wojciech Mu�a, http://0x80.pl/
+	Wojciech Muła, http://0x80.pl/
 	16-17.02.2007
 */
 

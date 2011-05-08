@@ -1,18 +1,19 @@
 <?xml version="1.0" ?>
 <!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'>
 
-<svg height="300px" width="700px" xmlns="http://www.w3.org/2000/svg" id="canvas"
+<svg height="600px" width="600px" xmlns="http://www.w3.org/2000/svg" id="canvas"
 	onload="init(evt)"
 	onclick="onClick(evt)"
 	onmousemove="onMouseMove(evt)"
 >
-	<title>Truncated octahedron (3D code by Wojciech Mula)</title>
+	<title>Truncated octahedron (3D code by Wojciech Muła)</title>
+	<text x="3px" y="20px">click: autorotate on/off</text>
 
 <script type="text/javascript">
 <![CDATA[
 /*
 
-	By Wojciech Mu�a, http://0x80.pl
+	By Wojciech Muła, http://0x80.pl
 	
 	$Date: 2009-02-20 23:04:40 $, $Revision: 1.6 $
 
@@ -24,6 +25,10 @@ var anglex	= 0.0
 var angley	= 0.0
 var animate = false
 var fps = 20
+
+var scale = 200
+var DX = 250
+var DY = DX
 
 function init(evt) {
 	svgdoc  = evt.target.ownerDocument;
@@ -113,8 +118,8 @@ function create_faces(vertices, indices) {
 		d = "";
 		for (j=0; j < indices[i].length; j++) {
 			[x, y, z] = vertices[indices[i][j]];
-			x = x * 100 + 200
-			y = y * 100 + 200
+			x = x * scale + DX
+			y = y * scale + DY
 
 			d = d + " " + x + "," + y;
 		}
@@ -149,8 +154,8 @@ function update_view(vertices, indices) {
 		n    = indices[i].length;
 		for (j=0; j < n; j++) {
 			[x, y, z] = vertices[indices[i][j]];
-			x = x * 100 + 200
-			y = y * 100 + 150
+			x = x * scale + DX
+			y = y * scale + DY
 
 			d = d + " " + x + "," + y;
 			midz += z;
@@ -189,17 +194,14 @@ function onClick(evt) {
 		rotate();
 	else
 		clearTimeout();
-
 }
 
 function onMouseMove(evt) {
-	if (animate) {
-		clearTimeout();
-		animate = false;
+	if (!animate) {
+		anglex = evt.pageX/100.0;
+		angley = evt.pageY/100.0;
+		setTimeout("update_view(transform(vertices, anglex, angley), indices)", fps);
 	}
-	anglex = evt.pageX/100.0;
-	angley = evt.pageY/100.0;
-	setTimeout("update_view(transform(vertices, anglex, angley), indices)", fps);
 }
 
 // ]]>

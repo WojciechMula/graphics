@@ -6,7 +6,6 @@
 	onclick="click(evt)"
 	onmousemove="motion(evt)"
 >
-
 	<path d="M50,100 C70,200 220,230 300,80" stroke="black" fill="none" stroke-width="1.5" id="curve" />
 	<polyline points="50,100 70,200 220,230 300,80" stroke="blue" fill="none" stroke-width="0.5" id="control-line" />
 	<circle cx="50"  cy="100" r="3" stroke="none" fill="red" id="cp0" />
