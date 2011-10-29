@@ -4,7 +4,7 @@
 #
 # License: BSD
 #
-# Wojciech Mu≥a
+# Wojciech Mu≈Ça
 # wojciech_mula@poczta.onet.pl
 
 # changelog:
