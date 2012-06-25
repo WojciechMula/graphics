@@ -1,0 +1,176 @@
+<?xml version="1.0" ?>
+<!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'>
+
+<svg height="300px" width="700px" xmlns="http://www.w3.org/2000/svg" id="canvas">
+	<title>Segment-cirlce intersection test (demo by Wojciech Muła 2012-06-24)</title>
+
+	<circle cx="200px" cy="200px" r="70px" stroke="black" fill="none" id="circle"/>
+	<line x1="20" y1="80" x2="200" y2="100" id="line" stroke="black" style="stroke-width:0.5px"/>
+
+	<text x="5" y="30" id="status">click near endpoint to move segment</text>
+<script type="text/javascript">
+<![CDATA[
+/*
+	Segment-cirlce intersection test
+	Wojciech Muła, http://0x80.pl/
+	2012-06-24
+*/
+
+var point = null;
+
+function OnMouseClick(ev) {
+	var dm, xm, ym, dx, dy, d1, d2;
+	
+	if (point != null) {
+		point = null;
+		return;
+	}
+	dm = 30 * 30; // min dist
+
+	xm = ev.clientX;
+	ym = ev.clientY;
+
+	dx = xm - x1;
+	dy = ym - y1;
+	d1 = dx*dx + dy*dy;
+	
+	dx = xm - x2;
+	dy = ym - y2;
+	d2 = dx*dx + dy*dy;
+
+	point = null;
+	if (d1 < dm || d2 < dm) {
+		if (d1 < d2) point = 1;
+		if (d2 < d1) point = 2;
+	}
+}
+
+function OnMouseMotion(ev) {
+	if (point == null) return;
+
+	var xa, ya, xb, yb, iters;
+	var x = ev.clientX;
+	var y = ev.clientY;
+
+	var line   = document.getElementById('line');
+	var circle = document.getElementById('circle');
+	var title  = document.getElementById('status');
+
+	if (point == 1) {
+		line.setAttribute('x1', x);
+		line.setAttribute('y1', y);
+		x1 = x;
+		y1 = y;
+	}
+	// point == 2
+	else {
+		line.setAttribute('x2', x);
+		line.setAttribute('y2', y);
+		x2 = x;
+		y2 = y;
+	}
+
+	if (segment_circle_intersection(x1, y1, x2, y2, cx, cy, R)) {
+		line.setAttribute('stroke', 'red');
+		circle.setAttribute('stroke', 'red');
+		title.textContent = 'intersection';
+	} else {
+		line.setAttribute('stroke', 'black');
+		circle.setAttribute('stroke', 'black');
+		title.textContent = 'no intersection';
+	}
+}
+
+function segment_circle_intersection(xa,ya, xb,yb, cx, cy, R) {
+
+	function dist_sqr(x1, y1, x2, y2) {
+		var dx = x1 - x2;
+		var dy = y1 - y2;
+		return dx * dx + dy * dy;
+	}
+	
+	var R_sqr = R * R;
+	var d1 = dist_sqr(xa, ya, cx, cy);
+	var d2 = dist_sqr(xb, yb, cx, cy);
+
+	// case 1
+	if (d1 < R_sqr && d2 < R_sqr) {
+		// segment inside
+		return false
+	}
+
+	// case 2
+	if ((d1 <= R_sqr && d2 >= R_sqr) || (d2 <= R_sqr && d1 >= R_sqr)) {
+		// intersection (one point inside, another outside)
+		return true;
+	}
+
+	// case 3 - check distance from line going through points A, B
+
+	// line equation: ax + by + c = 0 (L1)
+	var dx = xa - xb;
+	var dy = ya - yb;
+
+	var a = dy;
+	var b = -dx;
+	var c = -(a * xa + b * ya);
+
+	// distance^2 from line
+	var L = a * cx + b * cy + c;
+	var M = a * a + b * b
+	var d_sqr = (L*L)/M;
+
+	if (d_sqr > R_sqr) {
+		// distance greater then radius
+		return false;
+	}
+
+	// case 3a - make 2 lines perpendicular to L1 going through point A and B
+	// check if center of circle lies between them
+
+	// L2 equation: bx - ay + c1 = 0
+	// L3 equation: bx - ay + c2 = 0
+
+	var c1 = -(b * xa - a * ya);
+	var c2 = -(b * xb - a * yb);
+
+	var val1 = b * cx - a * cy + c1;
+	var val2 = b * cx - a * cy + c2;
+
+	return (val1 * val2) < 0.0;
+}
+
+
+// circle parameters
+var cx = 200;
+var cy = 200;
+var R = 75;
+
+// line coordinates
+var x1=20, y1=80, x2=200, y2=100;
+
+function setup() {
+	var circle = document.getElementById("circle");
+	circle.setAttribute("cx", cx);
+	circle.setAttribute("cy", cy);
+	circle.setAttribute("r", R);
+
+	var line = document.getElementById("line");
+	line.setAttribute('x1', x1);
+	line.setAttribute('x2', x2);
+	line.setAttribute('y1', y1);
+	line.setAttribute('y2', y2);
+
+	document.getElementById("canvas").onclick = OnMouseClick;
+	document.getElementById("canvas").onmousemove = OnMouseMotion;
+}
+
+setup();
+
+	// vim: ts=4 sw=4 nowrap
+	// ]]>
+	</script>
+	</svg>
+<!--
+	vim: ts=4 sw=4 nowrap
+-->
