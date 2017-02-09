@@ -48,4 +48,11 @@ Find a convex hull using Graham algorithm (tkinter)
 
 .. image:: img/graham-tkdemo.png
 
-.. image
+
+Sutherland-Hodgman --- clip a polygon against a convex polygon (tkinter)
+--------------------------------------------------------------------------------
+
+**polyintersect-tkdemo.py** allows to define two or more polygons and clip
+them using Sutherland-Hodgman algorithm.
+
+.. image:: img/polyintersect-tkdemo.png
