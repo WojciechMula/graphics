@@ -43,8 +43,6 @@ def quickhull(points):
 				s2.add(p)
 
 
-	class C:
-
 	def QH(A, B, P):
 		if len(P) == 0:
 			return []
@@ -81,7 +79,7 @@ def quickhull(points):
 			elif side(C, B, p) > 0:
 				s2.add(p)
 
-		print s1, s2
+		#print s1, s2
 		return QH(A, C, s1) + [C] + QH(C, B, s2)
 
 
@@ -114,7 +112,7 @@ if __name__ == '__main__':
 			convex_hull.append(p.x)
 			convex_hull.append(p.y)
 
-		print len(convex_hull), convex_hull
+		#print len(convex_hull), convex_hull
 		draw.polygon(convex_hull)
 	finally:
 		image.save("1.png", "PNG");
