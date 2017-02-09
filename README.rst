@@ -2,8 +2,8 @@
                             Graphics algorithms
 ================================================================================
 
-Various graphics algorithms I learned. Mostly Python program using either
-Tkinter or Python Imaging Library (PIL).
+Various graphics algorithms I learned. Python program using either Tkinter
+or Python Imaging Library (PIL), or Javascript embedded in SVG files.
 
 There are following library modules used by demo applications:
 
@@ -85,3 +85,17 @@ Clipping segment using Cohen-Sutherland algorithm (javascript + SVG)
 **Cohen_Sutherland-demo.svg** demonstrates the algorithm.
 
 .. image:: img/Cohen_Sutherland-demo.png
+
+
+Bounding box of an elliptical arc (javascript + SVG)
+--------------------------------------------------------------------------------
+
+**elarc_aabb-demo.svg** shows how to find the bounding-box of a rotated
+elliptical arc using basic math properties.
+
+There's `an article`__ in Polish which describes the algorithm.
+
+__ http://0x80.pl/articles/elarc-aabb.html
+
+.. image:: img/elarc_aabb-demo.png
+
