@@ -20,8 +20,9 @@ There are following library modules used by demo applications:
 Tkinter events serializer
 --------------------------------------------------
 
-Most Tkinter-based script relies on ``tk.py``, it's my attempt to express
-interactive tasks in an imperative way.
+Most Tkinter-based scripts relie on ``tkes.py``, it's my attempt to express
+interactive tasks in an imperative way. File ``tkes-demo.py`` is a simple
+drawing program which use this approach.
 
 
 BSP tree demo (tkinter)
