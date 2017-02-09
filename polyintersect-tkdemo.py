@@ -12,6 +12,7 @@ from Tkconstants import *
 from tkes   import EventsSerializer, FunctionInterrupted
 
 from polyintersect import intersection
+from isconvex import isconvex
 
 ABORT  = "abort"
 LBM    = '<Button-1>'
@@ -139,7 +140,6 @@ class SutherlandHodgmanDemo(object):
 			pass
 
 	def demo(self):
-		import utils2D
 
 		if len(self.canvas.find_withtag(ALL)) < 2:
 			return
@@ -152,7 +152,7 @@ class SutherlandHodgmanDemo(object):
 			poly1 = self.select_polygon()
 			self.canvas.itemconfigure(poly1, width=2, outline='red', tags='selected')
 			p1 = [p for p in conv(self.canvas.coords(poly1))]
-			convex1 = utils2D.isconvex(p1)
+			convex1 = isconvex(p1)
 
 			if convex1:	
 				self.status = "Picked convex polygon, now pick any polygon, either convex or nonconvex"
@@ -162,14 +162,14 @@ class SutherlandHodgmanDemo(object):
 			poly2 = self.select_polygon()
 			self.canvas.itemconfigure(poly2, width=2, outline='red', tags='selected')
 			p2 = [p for p in conv(self.canvas.coords(poly2))]
-			convex2 = utils2D.isconvex(p2)
+			convex2 = isconvex(p2)
 		
 			if convex1:
 				p = intersection(p2, p1)
 			elif convex2:
 				p = intersection(p1, p2)
 			else:
-				self.status = "You did not pick convex polygon"
+				self.status = "You did not pick a convex polygon"
 				# p1 nor p2 is not convex
 				raise FunctionInterrupted
 

@@ -9,6 +9,7 @@
 __all__ = ['intersection']
 
 import utils2D
+from isconvex import vertex_order
 
 def Sutherland_Hodgman(polygon, convex):
 	"""
@@ -19,8 +20,8 @@ def Sutherland_Hodgman(polygon, convex):
 	"""
 	n         = len(convex)
 	result    = polygon[:]
-	direction = utils2D.vertex_order(convex)
-	assert direction in ['CW', 'CCW'], ("Polygon not convex (%s)" % direction)
+	direction = vertex_order(convex)
+	assert direction in ['CW', 'CCW'], ("Polygon is not convex (%s)" % direction)
 
 	for i in xrange(n):
 		j  = (i+1) % n
