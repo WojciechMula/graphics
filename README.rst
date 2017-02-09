@@ -5,6 +5,13 @@
 Various graphics algorithms I learned. Mostly Python program using either
 Tkinter or Python Imaging Library (PIL).
 
+There are following library modules used by demo applications:
+
+* ``utils2D.py`` --- different procedures work with segments, polygons etc.;
+* ``aabb2D.py`` --- axis-aligned bounding boxes;
+* ``isconvex.py`` --- procedures work with convex polygons;
+* ``cbezier2D.py`` --- procedures work with cubic Bezier curves.
+
 
 Tkinter events serializer
 --------------------------------------------------
@@ -56,3 +63,14 @@ Sutherland-Hodgman --- clip a polygon against a convex polygon (tkinter)
 them using Sutherland-Hodgman algorithm.
 
 .. image:: img/polyintersect-tkdemo.png
+
+
+Exact bounding box of Tkinter "smooth curve" (tkinter)
+--------------------------------------------------------------------------------
+
+**tk_ebbox-demo.py** --- Tkinter uses Bezier splines to represent "smoothed
+curves", however its method bbox returns the bounding box of control points.
+This demo shows how to calculate an exact bounding box.
+
+.. image:: img/tk_ebbox-demo.png
+
