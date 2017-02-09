@@ -80,7 +80,7 @@ This demo shows how to calculate an exact bounding box.
 .. image:: img/tk_ebbox-demo.png
 
 
-Clipping segment using Cohen-Sutherland algorithm (javascript + SVG)
+Clipping segment using Cohen-Sutherland algorithm (JavaScript + SVG)
 --------------------------------------------------------------------------------
 
 **Cohen_Sutherland-demo.svg** demonstrates the algorithm.
@@ -88,7 +88,7 @@ Clipping segment using Cohen-Sutherland algorithm (javascript + SVG)
 .. image:: img/Cohen_Sutherland-demo.png
 
 
-Bounding box of an elliptical arc (javascript + SVG)
+Bounding box of an elliptical arc (JavaScript + SVG)
 --------------------------------------------------------------------------------
 
 **elarc_aabb-demo.svg** shows how to find the bounding-box of a rotated
@@ -100,3 +100,9 @@ __ http://0x80.pl/articles/elarc-aabb.html
 
 .. image:: img/elarc_aabb-demo.png
 
+
+Segment-circle intersection (JavaScript + SVG)
+--------------------------------------------------------------------------------
+
+**segment-circle-intersection-test.svg** show an algorithm to check whether
+a segment crosses a circle or not.
