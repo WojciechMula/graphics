@@ -10,7 +10,11 @@ There are following library modules used by demo applications:
 * ``utils2D.py`` --- different procedures work with segments, polygons etc.;
 * ``aabb2D.py`` --- axis-aligned bounding boxes;
 * ``isconvex.py`` --- procedures work with convex polygons;
-* ``cbezier2D.py`` --- procedures work with cubic Bezier curves.
+* ``cbezier2D.py`` --- procedures work with cubic Bezier curves;
+* convex hull algorithms: ``jarvis.py``, ``graham.py`` and ``quickhull.py``.
+
+
+.. contents::
 
 
 Tkinter events serializer
@@ -74,3 +78,10 @@ This demo shows how to calculate an exact bounding box.
 
 .. image:: img/tk_ebbox-demo.png
 
+
+Clipping segment using Cohen-Sutherland algorithm (javascript + SVG)
+--------------------------------------------------------------------------------
+
+**Cohen_Sutherland-demo.svg** demonstrates the algorithm.
+
+.. image:: img/Cohen_Sutherland-demo.png
