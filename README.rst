@@ -106,3 +106,11 @@ Segment-circle intersection (JavaScript + SVG)
 
 **segment-circle-intersection-test.svg** show an algorithm to check whether
 a segment crosses a circle or not.
+
+
+Graph layout using force-based approach (Tkinter)
+--------------------------------------------------------------------------------
+
+**fba.py** allows to select a few graphs and adjust algorithm's settings.
+
+.. image:: img/fba.png
