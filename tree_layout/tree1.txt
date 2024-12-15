@@ -1,0 +1,43 @@
+# sample 1
+
+root	-> a0 | a1 | a2 | a3
+
+# level 1
+a0	-> b0 | b1 | b2 | b3 
+
+# level 2
+b3	-> c0 | c1 | c2 | c3 | c4
+
+# level 3
+c3	-> d0 | d1 | d2 | d3
+
+# level 4
+d3	-> e0 | e1
+
+root	= circle "", 12
+
+a0	= root
+a1	= root
+a2	= root
+a3	= root
+
+b0	= root
+b1	= root
+b2	= root
+b3	= root
+
+c0	= root
+c1	= root
+c2	= root
+c3	= root
+c4	= root
+
+d0	= root
+d1	= root
+d2	= root
+d3	= root
+
+e0	= root
+e1	= root
+
+# eof
