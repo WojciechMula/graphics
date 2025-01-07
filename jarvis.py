@@ -112,11 +112,9 @@ def jarvis(points):
 	P1 = P
 	CH = [P0, P1]
 
-	i  = 1
 	while True:
-		A = CH[i]
-		B = CH[i-1]
-		print len(points)
+		A = CH[-1]
+		B = CH[-2]
 
 		for j, P in enumerate(points):
 			if P is not A and P is not B:
@@ -129,30 +127,28 @@ def jarvis(points):
 					if len(CH) > 1 and side(CH[1], B, P) > 0 and side(CH[-1], B, P) < 0:
 						points[j] = None
 
-		points = [P for P in points if P is not None]
+		points = [p for p in points if p is not None]
 
 		assert B is not None
 		if B == CH[1]:
 			break
 		else:
 			CH.append(B)
-			i += 1
 
-	#
 	return [(P.x, P.y) for P in CH[1:]]
 
 
 
 if __name__ == '__main__':
-	import Image
-	import ImageDraw
+	from PIL import Image
+	from PIL import ImageDraw
 	from random import randint, seed
 
-#	seed(100)
+	#seed(100)
 
 	S = 700
-	n = 25*10
-	points = [Point(randint(0, S), randint(0, S)) for i in xrange(n)]
+	n = 13*10
+	points = [Point(randint(0, S), randint(0, S)) for i in range(n)]
 	image = Image.new("RGB", (S, S))
 	draw  = ImageDraw.Draw(image)
 
@@ -164,7 +160,7 @@ if __name__ == '__main__':
 
 	try:
 		convex_hull = jarvis(points)
-		print len(convex_hull), convex_hull
+		print(len(convex_hull), convex_hull)
 		draw.polygon(convex_hull)
 	finally:
 		image.save("1.png", "PNG");
